@@ -1,0 +1,20 @@
+# Secrets
+.token_backup
+token.txt
+.env
+
+# Database
+*.db
+
+# Logs
+logs/
+*.log
+
+# Python
+__pycache__/
+*.pyc
+
+# Termux backups
+*.bak*
+*.save
+*.working
