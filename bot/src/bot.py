@@ -62,10 +62,40 @@ def init_resources_db():
     conn.close()
 
 RESOURCE_RATES = {"water": 1/1000, "coal": 1/3000, "copper": 1/6000, "gold": 1/30000}
-RESOURCE_EMOJI = {"water": "💧", "coal": "⚫", "copper": "🟠", "gold": "🥇"}
+RESOURCE_EMOJI = {"water": "💧", "coal": "⚫", "copper": "🟠", "gold": "🥇", "wheat": "🌾", "soil": "🟤", "wood": "🪵", "stones": "🪨"}
+ALL_RESOURCE_IDX = {"water": 1, "coal": 2, "copper": 3, "gold": 4, "wheat": 6, "soil": 7, "wood": 8, "stones": 9}
 
 init_db()
+
+def init_worker_model_db():
+    conn = sqlite3.connect('economy.db')
+    c = conn.cursor()
+    for col in ['wheat', 'soil', 'wood', 'stones']:
+        try:
+            c.execute(f"ALTER TABLE resources ADD COLUMN {col} REAL DEFAULT 0")
+        except sqlite3.OperationalError:
+            pass
+    c.execute("""CREATE TABLE IF NOT EXISTS buildings (
+                    user_id INTEGER,
+                    building_type TEXT,
+                    count INTEGER DEFAULT 0,
+                    PRIMARY KEY (user_id, building_type))""")
+    c.execute("""CREATE TABLE IF NOT EXISTS workers (
+                    user_id INTEGER,
+                    worker_type TEXT,
+                    count INTEGER DEFAULT 0,
+                    PRIMARY KEY (user_id, worker_type))""")
+    conn.commit()
+    conn.close()
+
+WORKER_RATE = 1/1000
+WORKER_TO_RESOURCE = {"farmer": "wheat", "lumberjack": "wood", "water_drawer": "water", "coal_miner": "coal", "copper_miner": "copper", "gold_miner": "gold"}
+FARMER_BYPRODUCTS = {"soil": 0.3, "stones": 0.1}
+HIRE_COST = {"farmer": 1, "lumberjack": 1, "water_drawer": 1, "coal_miner": 2, "copper_miner": 3, "gold_miner": 5}
+BUILDING_CAPACITY = {"straw_house": 4, "brick_house": 4}
+WORKER_BUILDING = {"farmer": "straw_house", "water_drawer": "brick_house", "coal_miner": "brick_house", "copper_miner": "brick_house", "gold_miner": "brick_house"}
 init_resources_db()
+init_worker_model_db()
 
 def reset_active_sessions_on_startup():
     conn = sqlite3.connect('economy.db')
@@ -88,6 +118,7 @@ def get_user(user_id, username):
                  (user_id, username, datetime.now().date()))
         conn.commit()
         user = (user_id, username, 0, 0, 0, None, 1.0, str(datetime.now().date()), 0)
+        get_or_create_worker_state(user_id)
     if user[7] != datetime.now().date():
         c.execute("UPDATE users SET today_seconds=0, last_reset=? WHERE user_id=?",
                  (datetime.now().date(), user_id))
@@ -111,11 +142,6 @@ def update_time(user_id, username):
                     WHERE user_id = ?""",
                  (int(seconds), int(seconds), earnings, datetime.now().isoformat(), user_id))
         conn.commit()
-        get_resources(user_id)
-        c.execute("UPDATE resources SET water=water+?, coal=coal+?, copper=copper+?, gold=gold+? WHERE user_id=?",
-                 (seconds*RESOURCE_RATES["water"], seconds*RESOURCE_RATES["coal"],
-                  seconds*RESOURCE_RATES["copper"], seconds*RESOURCE_RATES["gold"], user_id))
-        conn.commit()
     conn.close()
 
 def get_resources(user_id):
@@ -126,9 +152,99 @@ def get_resources(user_id):
     if not row:
         c.execute("INSERT INTO resources (user_id) VALUES (?)", (user_id,))
         conn.commit()
-        row = (user_id, 0, 0, 0, 0, 50)
+        row = (user_id, 0, 0, 0, 0, 50, 0, 0, 0, 0)
     conn.close()
     return row
+
+def get_or_create_worker_state(user_id):
+    conn = sqlite3.connect('economy.db')
+    c = conn.cursor()
+    c.execute("SELECT count FROM buildings WHERE user_id=? AND building_type='straw_house'", (user_id,))
+    exists = c.fetchone()
+    if not exists:
+        c.execute("INSERT INTO buildings VALUES (?, 'straw_house', 1)", (user_id,))
+        c.execute("INSERT INTO workers VALUES (?, 'farmer', 1)", (user_id,))
+        c.execute("INSERT INTO workers VALUES (?, 'lumberjack', 1)", (user_id,))
+        c.execute("INSERT OR IGNORE INTO resources (user_id, gild) VALUES (?, 10)", (user_id,))
+        conn.commit()
+    conn.close()
+
+def produce_by_workers(user_id, seconds):
+    conn = sqlite3.connect('economy.db')
+    c = conn.cursor()
+    c.execute("SELECT worker_type, count FROM workers WHERE user_id=?", (user_id,))
+    workers = c.fetchall()
+    for worker_type, count in workers:
+        if count <= 0 or worker_type not in WORKER_TO_RESOURCE:
+            continue
+        resource = WORKER_TO_RESOURCE[worker_type]
+        amount = count * seconds * WORKER_RATE
+        c.execute(f"UPDATE resources SET {resource}={resource}+? WHERE user_id=?", (amount, user_id))
+        if worker_type == 'farmer':
+            for byres, ratio in FARMER_BYPRODUCTS.items():
+                c.execute(f"UPDATE resources SET {byres}={byres}+? WHERE user_id=?", (amount*ratio, user_id))
+    conn.commit()
+    conn.close()
+
+BUILDING_COST = {
+    'straw_house': {'wheat': 100, 'soil': 100, 'wood': 50},
+    'brick_house': {'soil': 100, 'stones': 100, 'wood': 100},
+    'sawmill': {'wood': 50, 'wheat': 50, 'soil': 50},
+}
+
+def build_building(user_id, building_type):
+    if building_type not in BUILDING_COST:
+        return False, 'מבנה לא מוכר'
+    conn = sqlite3.connect('economy.db')
+    c = conn.cursor()
+    c.execute('SELECT wheat, soil, wood, stones FROM resources WHERE user_id=?', (user_id,))
+    wheat, soil, wood, stones = c.fetchone()
+    have = {'wheat': wheat, 'soil': soil, 'wood': wood, 'stones': stones}
+    cost = BUILDING_COST[building_type]
+    for res, amt in cost.items():
+        if have[res] < amt:
+            conn.close()
+            return False, f'אין מספיק {res}, צריך {amt}, יש {have[res]:.2f}'
+    for res, amt in cost.items():
+        c.execute(f'UPDATE resources SET {res}={res}-? WHERE user_id=?', (amt, user_id))
+    c.execute("""INSERT INTO buildings (user_id, building_type, count) VALUES (?, ?, 1)
+                 ON CONFLICT(user_id, building_type) DO UPDATE SET count = count + 1""", (user_id, building_type))
+    conn.commit()
+    conn.close()
+    return True, 'OK'
+
+def hire_worker(user_id, worker_type):
+    if worker_type not in HIRE_COST:
+        return False, 'סוג עובד לא קיים'
+    conn = sqlite3.connect('economy.db')
+    c = conn.cursor()
+    cost = HIRE_COST[worker_type]
+    c.execute('SELECT gild FROM resources WHERE user_id=?', (user_id,))
+    row = c.fetchone()
+    gild = row[0] if row else 0
+    if gild < cost:
+        conn.close()
+        return False, f'אין מספיק Gild, צריך {cost}, יש {gild}'
+    if worker_type in WORKER_BUILDING:
+        building_type = WORKER_BUILDING[worker_type]
+        c.execute('SELECT count FROM buildings WHERE user_id=? AND building_type=?', (user_id, building_type))
+        b = c.fetchone()
+        building_count = b[0] if b else 0
+        capacity = building_count * BUILDING_CAPACITY.get(building_type, 0)
+        same_building_workers = [w for w, bt in WORKER_BUILDING.items() if bt == building_type]
+        placeholders = ','.join('?' * len(same_building_workers))
+        c.execute(f'SELECT COALESCE(SUM(count),0) FROM workers WHERE user_id=? AND worker_type IN ({placeholders})',
+                  tuple([user_id] + same_building_workers))
+        current_workers = c.fetchone()[0]
+        if current_workers >= capacity:
+            conn.close()
+            return False, f'אין מקום ב-{building_type} ({current_workers}/{capacity}), בנה עוד מבנים'
+    c.execute('UPDATE resources SET gild=gild-? WHERE user_id=?', (cost, user_id))
+    c.execute('''INSERT INTO workers (user_id, worker_type, count) VALUES (?, ?, 1)
+                 ON CONFLICT(user_id, worker_type) DO UPDATE SET count = count + 1''', (user_id, worker_type))
+    conn.commit()
+    conn.close()
+    return True, 'OK'
 
 def get_active_users():
     conn = sqlite3.connect('economy.db')
@@ -146,6 +262,16 @@ def background_ticker():
                 update_time(user_id, username)
             except Exception as e:
                 print(f"⚠️ שגיאה בעדכון משתמש {user_id}: {e}")
+        conn = sqlite3.connect('economy.db')
+        c = conn.cursor()
+        c.execute('SELECT DISTINCT user_id FROM workers')
+        all_worker_users = [r[0] for r in c.fetchall()]
+        conn.close()
+        for user_id in all_worker_users:
+            try:
+                produce_by_workers(user_id, 10)
+            except Exception as e:
+                print(f"⚠️ שגיאה בייצור פועלים למשתמש {user_id}: {e}")
 
 # ================ COMMANDS ================
 @bot.message_handler(commands=['start'])
@@ -187,8 +313,39 @@ def leaderboard(message):
 def resources_cmd(message):
     update_time(message.from_user.id, message.from_user.username)
     row = get_resources(message.from_user.id)
-    text = f"📦 המשאבים שלך\n\n💧 מים: {row[1]:.2f}\n⚫ פחם: {row[2]:.2f}\n🟠 נחושת: {row[3]:.2f}\n🥇 זהב: {row[4]:.2f}\n\n💰 Gild: {row[5]:.2f}"
-    bot.reply_to(message, text)
+    NL = chr(10)
+    parts = []
+    parts.append('📦 המשאבים שלך')
+    parts.append('')
+    parts.append('💧 מים: ' + format(row[1], '.2f'))
+    parts.append('⚫ פחם: ' + format(row[2], '.2f'))
+    parts.append('🟠 נחושת: ' + format(row[3], '.2f'))
+    parts.append('🥇 זהב: ' + format(row[4], '.2f'))
+    parts.append('🌾 חיטה: ' + format(row[6], '.2f'))
+    parts.append('🟤 אדמה: ' + format(row[7], '.2f'))
+    parts.append('🪵 עץ: ' + format(row[8], '.2f'))
+    parts.append('🪨 אבנים: ' + format(row[9], '.2f'))
+    parts.append('')
+    parts.append('💰 Gild: ' + format(row[5], '.2f'))
+    conn = sqlite3.connect('economy.db')
+    c = conn.cursor()
+    c.execute("SELECT worker_type, count FROM workers WHERE user_id=? AND count>0", (message.from_user.id,))
+    workers = c.fetchall()
+    c.execute("SELECT building_type, count FROM buildings WHERE user_id=? AND count>0", (message.from_user.id,))
+    buildings = c.fetchall()
+    conn.close()
+    if workers:
+        parts.append('')
+        parts.append('👷 עובדים:')
+        for wt, cnt in workers:
+            parts.append(wt + ': ' + str(cnt))
+    if buildings:
+        parts.append('')
+        parts.append('🏠 מבנים:')
+        for bt, cnt in buildings:
+            parts.append(bt + ': ' + str(cnt))
+    bot.reply_to(message, NL.join(parts))
+
 
 @bot.message_handler(commands=['sell'])
 def sell_cmd(message):
@@ -197,7 +354,7 @@ def sell_cmd(message):
         bot.reply_to(message, "שימוש: /sell משאב כמות מחיר")
         return
     _, resource, amount_str, price_str = parts
-    if resource not in RESOURCE_RATES:
+    if resource not in ALL_RESOURCE_IDX:
         bot.reply_to(message, "משאב לא מוכר")
         return
     try:
@@ -211,7 +368,7 @@ def sell_cmd(message):
         return
     update_time(message.from_user.id, message.from_user.username)
     row = get_resources(message.from_user.id)
-    idx = {"water": 1, "coal": 2, "copper": 3, "gold": 4}[resource]
+    idx = ALL_RESOURCE_IDX[resource]
     if row[idx] < amount:
         bot.reply_to(message, f"אין מספיק {resource}")
         return
@@ -309,6 +466,34 @@ def end_session(message):
     conn.commit()
     conn.close()
     bot.reply_to(message, "✅ סשן הסתיים. בדוק את היתרה עם /balance")
+
+@bot.message_handler(commands=['build'])
+def build_cmd(message):
+    parts = message.text.split()
+    if len(parts) != 2:
+        names = ', '.join(BUILDING_COST.keys())
+        bot.reply_to(message, f'שימוש: /build שם_מבנה\nאפשרויות: {names}')
+        return
+    building_type = parts[1]
+    ok, msg = build_building(message.from_user.id, building_type)
+    if ok:
+        bot.reply_to(message, f'✅ נבנה {building_type} בהצלחה!')
+    else:
+        bot.reply_to(message, f'❌ {msg}')
+
+@bot.message_handler(commands=['hire'])
+def hire_cmd(message):
+    parts = message.text.split()
+    if len(parts) != 2:
+        names = ', '.join(HIRE_COST.keys())
+        bot.reply_to(message, f'שימוש: /hire סוג_עובד\nאפשרויות: {names}')
+        return
+    worker_type = parts[1]
+    ok, msg = hire_worker(message.from_user.id, worker_type)
+    if ok:
+        bot.reply_to(message, f'✅ גויס {worker_type} בהצלחה!')
+    else:
+        bot.reply_to(message, f'❌ {msg}')
 
 @bot.message_handler(func=lambda m: True)
 def every_message(message):
