@@ -141,20 +141,28 @@ Analyst Agent:
 
 ## 10. Current Tasks
 
-[ ] יצירת מבנה פרויקט
+[x] יצירת מבנה פרויקט
 
 [ ] תיעוד bot.py
 
 [ ] תיעוד פקודות
 
-[ ] Git baseline
+[x] Git baseline
 
-[ ] מערכת Backup
+[x] מערכת Backup
 
 [ ] מיזוג SLH
 
 
 ## 11. Decision Log
+
+תאריך: 2026-07-07
+החלטה: תוקנו 4 באגים ב-bot.py (Gild init, ייצור כפול, /hire חסרה, תמיכת משאבים ב-resources/sell)
+סיבה: הבוט לא פעל תקין
+
+תאריך: 2026-07-12
+החלטה: איחוד bot.py מהתיקייה הראשית לתוך SLH-DEV/bot/src/bot.py כגרסה הרשמית
+סיבה: המשחק הוא חלק מפרויקט SLH
 
 תאריך:
 
