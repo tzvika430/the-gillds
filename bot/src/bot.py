@@ -240,7 +240,7 @@ def hire_worker(user_id, worker_type):
         if current_workers >= capacity:
             conn.close()
 
-            msg = 'no room in ' + building_type
+            msg = f'אין מקום ב-{building_type} ({current_workers}/{capacity}), בנה עוד מבנים'
             return False, msg
     c.execute('UPDATE resources SET gild=gild-? WHERE user_id=?', (cost, user_id))
     c.execute('''INSERT INTO workers (user_id, worker_type, count) VALUES (?, ?, 1)
