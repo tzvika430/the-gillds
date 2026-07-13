@@ -9,7 +9,9 @@ TEST_DB = "/data/data/com.termux/files/home/SLH-DEV/tests/test_economy.db"
 if os.path.exists(TEST_DB):
     os.remove(TEST_DB)
 
+CONFIG_SRC = "/data/data/com.termux/files/home/SLH-DEV/bot/services/config.py"
 src = open(BOT_SRC, encoding="utf-8").read()
+src = src + "\n" + open(CONFIG_SRC, encoding="utf-8").read()
 
 def extract_const(name):
     pat_multi = r"^" + name + r" = \{\s*\n.*?^\}"

@@ -4,12 +4,13 @@ import time
 import sqlite3
 from datetime import datetime, timedelta
 import threading
+import sys, os
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'services'))
+from config import *
 
 # ================ CONFIG ================
 with open("/data/data/com.termux/files/home/SLH-DEV/.token_backup", "r") as f:
     TOKEN = f.read().strip()
-BASE_RATE = 0.003858
-DB_PATH = "/data/data/com.termux/files/home/SLH-DEV/database/economy.db"
 
 bot = telebot.TeleBot(TOKEN)
 
@@ -62,9 +63,6 @@ def init_resources_db():
     conn.commit()
     conn.close()
 
-RESOURCE_RATES = {"water": 1/1000, "coal": 1/3000, "copper": 1/6000, "gold": 1/30000}
-RESOURCE_EMOJI = {"water": "💧", "coal": "⚫", "copper": "🟠", "gold": "🥇", "wheat": "🌾", "soil": "🟤", "wood": "🪵", "stones": "🪨"}
-ALL_RESOURCE_IDX = {"water": 1, "coal": 2, "copper": 3, "gold": 4, "wheat": 6, "soil": 7, "wood": 8, "stones": 9}
 
 init_db()
 
@@ -89,12 +87,6 @@ def init_worker_model_db():
     conn.commit()
     conn.close()
 
-WORKER_RATE = 1/1000
-WORKER_TO_RESOURCE = {"farmer": "wheat", "lumberjack": "wood", "water_drawer": "water", "coal_miner": "coal", "copper_miner": "copper", "gold_miner": "gold"}
-FARMER_BYPRODUCTS = {"soil": 0.3, "stones": 0.1}
-HIRE_COST = {"farmer": 1, "lumberjack": 1, "water_drawer": 1, "coal_miner": 2, "copper_miner": 3, "gold_miner": 5}
-BUILDING_CAPACITY = {"straw_house": 4, "brick_house": 4}
-WORKER_BUILDING = {"farmer": "straw_house", "water_drawer": "brick_house", "coal_miner": "brick_house", "copper_miner": "brick_house", "gold_miner": "brick_house"}
 init_resources_db()
 init_worker_model_db()
 
@@ -187,11 +179,6 @@ def produce_by_workers(user_id, seconds):
     conn.commit()
     conn.close()
 
-BUILDING_COST = {
-    'straw_house': {'wheat': 100, 'soil': 100, 'wood': 50},
-    'brick_house': {'soil': 100, 'stones': 100, 'wood': 100},
-    'sawmill': {'wood': 50, 'wheat': 50, 'soil': 50},
-}
 
 def build_building(user_id, building_type):
     if building_type not in BUILDING_COST:
