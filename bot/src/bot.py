@@ -11,81 +11,10 @@ from database import *
 
 from bot_instance import bot
 # ================ DATABASE ================
-def init_db():
-    conn = sqlite3.connect(DB_PATH)
-    c = conn.cursor()
-    c.execute('''CREATE TABLE IF NOT EXISTS users (
-                    user_id INTEGER PRIMARY KEY,
-                    username TEXT,
-                    total_seconds INTEGER DEFAULT 0,
-                    today_seconds INTEGER DEFAULT 0,
-                    balance REAL DEFAULT 0,
-                    last_active TEXT,
-                    multiplier REAL DEFAULT 1.0,
-                    last_reset DATE,
-                    session_active INTEGER DEFAULT 0)''')
-    conn.commit()
-    try:
-        c.execute("ALTER TABLE users ADD COLUMN session_active INTEGER DEFAULT 0")
-        conn.commit()
-    except sqlite3.OperationalError:
-        pass
-    conn.close()
-
-def init_resources_db():
-    conn = sqlite3.connect(DB_PATH)
-    c = conn.cursor()
-    c.execute("""CREATE TABLE IF NOT EXISTS resources (
-                    user_id INTEGER PRIMARY KEY,
-                    water REAL DEFAULT 0,
-                    coal REAL DEFAULT 0,
-                    copper REAL DEFAULT 0,
-                    gold REAL DEFAULT 0,
-                    gild REAL DEFAULT 50)""")
-    c.execute("""CREATE TABLE IF NOT EXISTS market (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    seller_id INTEGER,
-                    resource TEXT,
-                    amount REAL,
-                    price_per_unit REAL,
-                    created_at TEXT)""")
-    conn.commit()
-    conn.close()
-
-
 init_db()
-
-def init_worker_model_db():
-    conn = sqlite3.connect(DB_PATH)
-    c = conn.cursor()
-    for col in ['wheat', 'soil', 'wood', 'stones']:
-        try:
-            c.execute(f"ALTER TABLE resources ADD COLUMN {col} REAL DEFAULT 0")
-        except sqlite3.OperationalError:
-            pass
-    c.execute("""CREATE TABLE IF NOT EXISTS buildings (
-                    user_id INTEGER,
-                    building_type TEXT,
-                    count INTEGER DEFAULT 0,
-                    PRIMARY KEY (user_id, building_type))""")
-    c.execute("""CREATE TABLE IF NOT EXISTS workers (
-                    user_id INTEGER,
-                    worker_type TEXT,
-                    count INTEGER DEFAULT 0,
-                    PRIMARY KEY (user_id, worker_type))""")
-    conn.commit()
-    conn.close()
 
 init_resources_db()
 init_worker_model_db()
-
-def reset_active_sessions_on_startup():
-    conn = sqlite3.connect(DB_PATH)
-    c = conn.cursor()
-    c.execute("UPDATE users SET last_active=? WHERE session_active=1",
-              (datetime.now().isoformat(),))
-    conn.commit()
-    conn.close()
 
 reset_active_sessions_on_startup()
 
