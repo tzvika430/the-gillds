@@ -11,7 +11,9 @@ if os.path.exists(TEST_DB):
 
 CONFIG_SRC = "/data/data/com.termux/files/home/SLH-DEV/bot/services/config.py"
 src = open(BOT_SRC, encoding="utf-8").read()
+DB_SRC = "/data/data/com.termux/files/home/SLH-DEV/bot/services/database.py"
 src = src + "\n" + open(CONFIG_SRC, encoding="utf-8").read()
+src = src + "\n" + open(DB_SRC, encoding="utf-8").read()
 
 def extract_const(name):
     pat_multi = r"^" + name + r" = \{\s*\n.*?^\}"
@@ -26,7 +28,8 @@ def extract_func(name):
     m = re.search(pat, src, re.MULTILINE | re.DOTALL)
     return m.group(0)
 
-ns = {"sqlite3": sqlite3}
+from datetime import datetime, timedelta
+ns = {"sqlite3": sqlite3, "datetime": datetime, "timedelta": timedelta}
 exec("DB_PATH = " + repr(TEST_DB), ns)
 CONSTS = ["HIRE_COST", "WORKER_BUILDING", "BUILDING_CAPACITY",
           "BUILDING_COST", "WORKER_TO_RESOURCE", "FARMER_BYPRODUCTS",
@@ -35,12 +38,19 @@ for name in CONSTS:
     exec(extract_const(name), ns)
 
 FUNCS = ["get_or_create_worker_state", "hire_worker",
-         "build_building", "get_resources", "produce_by_workers"]
+         "build_building", "get_resources", "produce_by_workers",
+         "get_user", "update_time"]
 for name in FUNCS:
     exec(extract_func(name), ns)
 
 conn = sqlite3.connect(TEST_DB)
 c = conn.cursor()
+c.execute("""CREATE TABLE users (
+    user_id INTEGER PRIMARY KEY, username TEXT,
+    total_seconds INTEGER DEFAULT 0, today_seconds INTEGER DEFAULT 0,
+    balance REAL DEFAULT 0, last_active TEXT,
+    multiplier REAL DEFAULT 1.0, last_reset DATE,
+    session_active INTEGER DEFAULT 0)""")
 c.execute("""CREATE TABLE resources (
     user_id INTEGER PRIMARY KEY,
     water REAL DEFAULT 0, coal REAL DEFAULT 0,
@@ -73,6 +83,8 @@ get_or_create_worker_state = ns["get_or_create_worker_state"]
 hire_worker = ns["hire_worker"]
 build_building = ns["build_building"]
 get_resources = ns["get_resources"]
+get_user = ns["get_user"]
+update_time = ns["update_time"]
 
 USER = 999999
 
@@ -118,6 +130,10 @@ conn.commit()
 conn.close()
 ok, msg = hire_worker(USER2, "farmer")
 check("insufficient gild blocks hire", ok == False)
+
+update_time(USER, "testuser")
+u = get_user(USER, "testuser")
+check("update_time/get_user runs without error", u is not None)
 
 print()
 print("TOTAL:", passed, "passed,", failed, "failed")
