@@ -227,3 +227,104 @@ def reset_active_sessions_on_startup():
     conn.commit()
     conn.close()
 
+
+
+def init_predator_state():
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    c.execute("""CREATE TABLE IF NOT EXISTS predator_state (
+                    id INTEGER PRIMARY KEY CHECK (id = 1),
+                    last_event_at TEXT)""")
+    c.execute("INSERT OR IGNORE INTO predator_state (id, last_event_at) VALUES (1, NULL)")
+    conn.commit()
+    conn.close()
+
+
+def get_total_player_count():
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    c.execute("SELECT COUNT(*) FROM users")
+    n = c.fetchone()[0]
+    conn.close()
+    return n
+
+
+def get_last_predator_event():
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    c.execute("SELECT last_event_at FROM predator_state WHERE id=1")
+    row = c.fetchone()
+    conn.close()
+    if not row or not row[0]:
+        return None
+    return datetime.fromisoformat(row[0])
+
+
+def set_last_predator_event(dt):
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    c.execute("UPDATE predator_state SET last_event_at=? WHERE id=1", (dt.isoformat(),))
+    conn.commit()
+    conn.close()
+
+
+def get_eligible_predator_targets(needed):
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    c.execute("SELECT DISTINCT user_id FROM workers WHERE count > 0")
+    user_ids = [r[0] for r in c.fetchall()]
+    eligible = []
+    for uid in user_ids:
+        c.execute("SELECT worker_type, count FROM workers WHERE user_id=? AND count>0", (uid,))
+        rows = c.fetchall()
+        total = sum(cnt for wt, cnt in rows)
+        farmer_count = sum(cnt for wt, cnt in rows if wt == PREDATOR_PROTECTED_TYPE)
+        reserved = PREDATOR_PROTECTED_MIN if farmer_count >= PREDATOR_PROTECTED_MIN else 0
+        eatable = total - reserved
+        if eatable >= needed:
+            eligible.append(uid)
+    conn.close()
+    return eligible
+
+
+def eat_random_workers(user_id, needed):
+    import random
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    c.execute("SELECT worker_type, count FROM workers WHERE user_id=? AND count>0", (user_id,))
+    rows = c.fetchall()
+    pool = []
+    for wt, cnt in rows:
+        avail = cnt
+        if wt == PREDATOR_PROTECTED_TYPE:
+            avail = max(0, cnt - PREDATOR_PROTECTED_MIN)
+        pool += [wt] * avail
+    random.shuffle(pool)
+    chosen = pool[:needed]
+    tally = {}
+    for wt in chosen:
+        tally[wt] = tally.get(wt, 0) + 1
+    for wt, n in tally.items():
+        c.execute("UPDATE workers SET count=count-? WHERE user_id=? AND worker_type=?", (n, user_id, wt))
+    conn.commit()
+    conn.close()
+    return chosen
+
+
+def check_and_trigger_predator_event():
+    import random
+    now = datetime.now()
+    last = get_last_predator_event()
+    player_count = get_total_player_count()
+    interval = PREDATOR_DAILY_SECONDS if player_count >= PREDATOR_DAILY_THRESHOLD_PLAYERS else PREDATOR_WEEKLY_SECONDS
+    if last is not None and (now - last).total_seconds() < interval:
+        return None
+    predator = random.choice(["tiger", "lion"])
+    needed = TIGER_EAT_COUNT if predator == "tiger" else LION_EAT_COUNT
+    targets = get_eligible_predator_targets(needed)
+    set_last_predator_event(now)
+    if not targets:
+        return None
+    user_id = random.choice(targets)
+    eaten = eat_random_workers(user_id, needed)
+    return (user_id, predator, eaten)

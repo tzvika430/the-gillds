@@ -33,13 +33,19 @@ ns = {"sqlite3": sqlite3, "datetime": datetime, "timedelta": timedelta}
 exec("DB_PATH = " + repr(TEST_DB), ns)
 CONSTS = ["HIRE_COST", "WORKER_BUILDING", "BUILDING_CAPACITY",
           "BUILDING_COST", "WORKER_TO_RESOURCE", "FARMER_BYPRODUCTS",
-          "WORKER_RATE"]
+          "WORKER_RATE", "PREDATOR_DAILY_THRESHOLD_PLAYERS",
+          "PREDATOR_WEEKLY_SECONDS", "PREDATOR_DAILY_SECONDS",
+          "TIGER_EAT_COUNT", "LION_EAT_COUNT",
+          "PREDATOR_PROTECTED_TYPE", "PREDATOR_PROTECTED_MIN"]
 for name in CONSTS:
     exec(extract_const(name), ns)
 
 FUNCS = ["get_or_create_worker_state", "hire_worker",
          "build_building", "get_resources", "produce_by_workers",
-         "get_user", "update_time"]
+         "get_user", "update_time", "init_predator_state",
+         "get_total_player_count", "get_last_predator_event",
+         "set_last_predator_event", "get_eligible_predator_targets",
+         "eat_random_workers", "check_and_trigger_predator_event"]
 for name in FUNCS:
     exec(extract_func(name), ns)
 
@@ -61,6 +67,8 @@ c.execute("""CREATE TABLE resources (
 c.execute("""CREATE TABLE workers (
     user_id INTEGER, worker_type TEXT, count INTEGER DEFAULT 0,
     PRIMARY KEY(user_id, worker_type))""")
+c.execute("""CREATE TABLE predator_state (
+    id INTEGER PRIMARY KEY, last_event_at TEXT)""")
 c.execute("""CREATE TABLE buildings (
     user_id INTEGER, building_type TEXT, count INTEGER DEFAULT 0,
     PRIMARY KEY(user_id, building_type))""")
@@ -135,6 +143,41 @@ update_time(USER, "testuser")
 u = get_user(USER, "testuser")
 check("update_time/get_user runs without error", u is not None)
 
+
+init_predator_state = ns["init_predator_state"]
+get_eligible_predator_targets = ns["get_eligible_predator_targets"]
+eat_random_workers = ns["eat_random_workers"]
+check_and_trigger_predator_event = ns["check_and_trigger_predator_event"]
+
+init_predator_state()
+
+USER3 = 777777
+conn = sqlite3.connect(TEST_DB)
+cc = conn.cursor()
+cc.execute("INSERT INTO workers VALUES (?, 'farmer', 1)", (USER3,))
+conn.commit()
+conn.close()
+
+USER4 = 666666
+conn = sqlite3.connect(TEST_DB)
+cc = conn.cursor()
+cc.execute("INSERT INTO workers VALUES (?, 'farmer', 2)", (USER4,))
+cc.execute("INSERT INTO workers VALUES (?, 'lumberjack', 1)", (USER4,))
+conn.commit()
+conn.close()
+
+eligible = get_eligible_predator_targets(1)
+check("farmer-only player NOT eligible (protected)", USER3 not in eligible)
+check("player with 2 farmers IS eligible", USER4 in eligible)
+
+chosen = eat_random_workers(USER3, 1)
+check("cannot eat the last protected farmer", len(chosen) == 0)
+
+result1 = check_and_trigger_predator_event()
+check("first predator check triggers an event", result1 is not None)
+
+result2 = check_and_trigger_predator_event()
+check("second immediate check does not trigger", result2 is None)
 print()
 print("TOTAL:", passed, "passed,", failed, "failed")
 sys.exit(1 if failed else 0)

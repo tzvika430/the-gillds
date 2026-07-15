@@ -17,6 +17,7 @@ init_resources_db()
 init_worker_model_db()
 
 reset_active_sessions_on_startup()
+init_predator_state()
 
 # ================ HELPER FUNCTIONS ================
 def background_ticker():
@@ -37,6 +38,20 @@ def background_ticker():
                 produce_by_workers(user_id, 10)
             except Exception as e:
                 print(f"⚠️ שגיאה בייצור פועלים למשתמש {user_id}: {e}")
+        try:
+            result = check_and_trigger_predator_event()
+            if result:
+                pid, predator, eaten = result
+                pname = {"tiger": "נמר", "lion": "אריה"}[predator]
+                tally = {}
+                for wt in eaten:
+                    tally[wt] = tally.get(wt, 0) + 1
+                parts_txt = [wt + " x" + str(n) for wt, n in tally.items()]
+                eaten_txt = ", ".join(parts_txt)
+                msg = pname + " תקף בלילה וטרף: " + eaten_txt
+                bot.send_message(pid, msg)
+        except Exception as e:
+            print(f"⚠️ שגיאה באירוע טורף: {e}")
 
 # ================ COMMANDS ================
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'handlers'))

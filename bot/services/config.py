@@ -14,3 +14,15 @@ BUILDING_COST = {
     'brick_house': {'soil': 100, 'stones': 100, 'wood': 100},
     'sawmill': {'wood': 50, 'wheat': 50, 'soil': 50},
 }
+
+# ================ PREDATOR EVENT ================
+PREDATOR_DAILY_THRESHOLD_PLAYERS = 10
+PREDATOR_WEEKLY_SECONDS = 604800
+PREDATOR_DAILY_SECONDS = 86400
+TIGER_EAT_COUNT = 2
+LION_EAT_COUNT = 1
+PREDATOR_PROTECTED_TYPE = "farmer"
+PREDATOR_PROTECTED_MIN = 1
+# Future: soldier types reduce predation chance (not yet implemented, no soldier types exist yet)
+# soldier: -1%, commander: -2%, general: -4%
+SOLDIER_RISK_REDUCTION = {"soldier": 0.01, "commander": 0.02, "general": 0.04}
