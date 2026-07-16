@@ -125,7 +125,7 @@ def hire_worker(user_id, worker_type):
         c.execute('SELECT count FROM buildings WHERE user_id=? AND building_type=?', (user_id, building_type))
         b = c.fetchone()
         building_count = b[0] if b else 0
-        capacity = building_count * BUILDING_CAPACITY.get(building_type, 0)
+        capacity = building_count * BUILDING_CAPACITY.get(building_type, DEFAULT_BUILDING_CAPACITY)
         same_building_workers = [w for w, bt in WORKER_BUILDING.items() if bt == building_type]
         placeholders = ','.join('?' * len(same_building_workers))
         q2 = 'SELECT COALESCE(SUM(count),0) FROM workers WHERE user_id=? AND worker_type IN (' + placeholders + ')'

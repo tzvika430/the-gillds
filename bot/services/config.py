@@ -26,3 +26,5 @@ PREDATOR_PROTECTED_MIN = 1
 # Future: soldier types reduce predation chance (not yet implemented, no soldier types exist yet)
 # soldier: -1%, commander: -2%, general: -4%
 SOLDIER_RISK_REDUCTION = {"soldier": 0.01, "commander": 0.02, "general": 0.04}
+
+DEFAULT_BUILDING_CAPACITY = 4
