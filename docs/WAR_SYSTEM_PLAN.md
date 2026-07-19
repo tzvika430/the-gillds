@@ -32,7 +32,33 @@ solve the Gild-earning problem (still need Gild to spend), but ensures
 a player can always progress even with zero other active players,
 as long as they already hold any Gild.
 
-## 5. Status summary
+## 5. Soldier system (prerequisite for combat)
+
+Status: Planned only — NOT implemented yet.
+
+New building: barracks
+  Cost: soil 100, stones 100, wood 100 (same as brick_house)
+  Capacity: 4 (default), shared among all three soldier tiers combined
+  (same sharing pattern as brick_house's 4 capacity shared among
+  water_drawer/coal_miner/copper_miner/gold_miner)
+
+Three tiers, hierarchical:
+  soldier   - cost 2 Gild
+  commander - cost 10 Gild, requires the player to already own at least
+              6 soldiers before commander recruitment is unlocked
+  general   - cost 30 Gild, requires the player to already own at least
+              3 commanders before general recruitment is unlocked
+(Owning the prerequisite amount unlocks recruitment; the prerequisite
+units are NOT consumed/removed when recruiting the next tier.)
+
+Purpose:
+  - Required for combat: a player with zero soldiers automatically
+    loses if attacked (see section 2).
+  - Reduces predator event risk per SOLDIER_RISK_REDUCTION already
+    defined in config.py: soldier -1%, commander -2%, general -4%
+    (not yet wired into check_and_trigger_predator_event()).
+
+## 6. Status summary
 
 - Combat rules (sections 1-3): documented only, NOT implemented.
   Blocked on soldier system existing.
