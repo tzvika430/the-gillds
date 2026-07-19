@@ -328,3 +328,21 @@ def check_and_trigger_predator_event():
     user_id = random.choice(targets)
     eaten = eat_random_workers(user_id, needed)
     return (user_id, predator, eaten)
+
+
+def buy_from_system(user_id, resource, amount):
+    if resource not in ALL_RESOURCE_IDX:
+        return False, 'משאב לא מוכר'
+    cost = amount / NPC_BUY_RATE
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    c.execute('SELECT gild FROM resources WHERE user_id=?', (user_id,))
+    row = c.fetchone()
+    gild = row[0] if row else 0
+    if gild < cost:
+        conn.close()
+        return False, f'אין מספיק Gild, צריך {cost:.2f}, יש {gild}'
+    c.execute(f"UPDATE resources SET gild=gild-?, {resource}={resource}+? WHERE user_id=?", (cost, amount, user_id))
+    conn.commit()
+    conn.close()
+    return True, 'OK'

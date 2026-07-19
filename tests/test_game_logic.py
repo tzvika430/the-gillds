@@ -37,7 +37,7 @@ CONSTS = ["HIRE_COST", "WORKER_BUILDING", "BUILDING_CAPACITY",
           "PREDATOR_WEEKLY_SECONDS", "PREDATOR_DAILY_SECONDS",
           "TIGER_EAT_COUNT", "LION_EAT_COUNT",
           "PREDATOR_PROTECTED_TYPE", "PREDATOR_PROTECTED_MIN",
-          "DEFAULT_BUILDING_CAPACITY"]
+          "DEFAULT_BUILDING_CAPACITY", "NPC_BUY_RATE", "ALL_RESOURCE_IDX"]
 for name in CONSTS:
     exec(extract_const(name), ns)
 
@@ -46,7 +46,8 @@ FUNCS = ["get_or_create_worker_state", "hire_worker",
          "get_user", "update_time", "init_predator_state",
          "get_total_player_count", "get_last_predator_event",
          "set_last_predator_event", "get_eligible_predator_targets",
-         "eat_random_workers", "check_and_trigger_predator_event"]
+         "eat_random_workers", "check_and_trigger_predator_event",
+         "buy_from_system"]
 for name in FUNCS:
     exec(extract_func(name), ns)
 
@@ -179,6 +180,13 @@ check("first predator check triggers an event", result1 is not None)
 
 result2 = check_and_trigger_predator_event()
 check("second immediate check does not trigger", result2 is None)
+buy_from_system = ns["buy_from_system"]
+ok, msg = buy_from_system(USER, "wood", 200)
+check("buy 200 wood costs exactly 1 gild", ok == True)
+row_after = get_resources(USER)
+ok2, msg2 = buy_from_system(USER, "gold", 999999999)
+check("buying more than affordable fails", ok2 == False)
+
 print()
 print("TOTAL:", passed, "passed,", failed, "failed")
 sys.exit(1 if failed else 0)

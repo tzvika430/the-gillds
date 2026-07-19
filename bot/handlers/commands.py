@@ -228,6 +228,30 @@ def hire_cmd(message):
     else:
         bot.reply_to(message, f'❌ {msg}')
 
+@bot.message_handler(commands=['store'])
+def store_cmd(message):
+    update_time(message.from_user.id, message.from_user.username)
+    parts = message.text.split()
+    if len(parts) != 3:
+        names = ', '.join(ALL_RESOURCE_IDX.keys())
+        bot.reply_to(message, f'שימוש: /store משאב כמות\nאפשרויות: {names}\nשער: {NPC_BUY_RATE} יחידות ל-1 Gild')
+        return
+    resource = parts[1]
+    try:
+        amount = float(parts[2])
+    except ValueError:
+        bot.reply_to(message, 'כמות חייבת להיות מספר')
+        return
+    if amount <= 0:
+        bot.reply_to(message, 'כמות חייבת להיות חיובית')
+        return
+    ok, msg = buy_from_system(message.from_user.id, resource, amount)
+    if ok:
+        bot.reply_to(message, f'✅ קנית {amount} {resource} מהמערכת')
+    else:
+        bot.reply_to(message, f'❌ {msg}')
+
 @bot.message_handler(func=lambda m: True)
 def every_message(message):
     update_time(message.from_user.id, message.from_user.username)
+
