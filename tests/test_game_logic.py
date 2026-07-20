@@ -120,16 +120,29 @@ check("coal_miner blocked, brick_house full", ok == False)
 
 conn = sqlite3.connect(TEST_DB)
 cc = conn.cursor()
-cc.execute("UPDATE resources SET gild=gild+100 WHERE user_id=?", (USER,))
+cc.execute("UPDATE resources SET gild=gild+100, soil=soil+500, stones=stones+500, wood=wood+500, wheat=wheat+500 WHERE user_id=?", (USER,))
 conn.commit()
 conn.close()
 
-all_lj_ok = True
-for i in range(30):
+ok, msg = hire_worker(USER, "lumberjack")
+check("2nd lumberjack blocked without sawmill", ok == False)
+
+ok, msg = build_building(USER, "sawmill")
+check("build sawmill succeeds", ok == True)
+
+lj_results = []
+for i in range(3):
     ok, msg = hire_worker(USER, "lumberjack")
-    if not ok:
-        all_lj_ok = False
-check("lumberjack unlimited, 30 hires", all_lj_ok == True)
+    lj_results.append(ok)
+check("3 lumberjacks hired after sawmill (total 4/4)", all(lj_results)
+
+
+
+
+)
+
+ok, msg = hire_worker(USER, "lumberjack")
+check("5th lumberjack blocked, sawmill full", ok == False)
 
 USER2 = 888888
 get_or_create_worker_state(USER2)

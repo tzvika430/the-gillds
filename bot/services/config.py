@@ -8,7 +8,7 @@ WORKER_TO_RESOURCE = {"farmer": "wheat", "lumberjack": "wood", "water_drawer": "
 FARMER_BYPRODUCTS = {"soil": 0.3, "stones": 0.3}
 HIRE_COST = {"farmer": 1, "lumberjack": 1, "water_drawer": 1, "coal_miner": 2, "copper_miner": 3, "gold_miner": 5}
 BUILDING_CAPACITY = {"straw_house": 4, "brick_house": 4}
-WORKER_BUILDING = {"farmer": "straw_house", "water_drawer": "brick_house", "coal_miner": "brick_house", "copper_miner": "brick_house", "gold_miner": "brick_house"}
+WORKER_BUILDING = {"farmer": "straw_house", "lumberjack": "sawmill", "water_drawer": "brick_house", "coal_miner": "brick_house", "copper_miner": "brick_house", "gold_miner": "brick_house"}
 BUILDING_COST = {
     'straw_house': {'wheat': 100, 'soil': 100, 'wood': 50},
     'brick_house': {'soil': 100, 'stones': 100, 'wood': 100},
