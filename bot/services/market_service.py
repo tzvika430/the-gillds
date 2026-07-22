@@ -12,7 +12,7 @@ def sell_resource(user_id, resource, amount, price):
         return False, f'אין מספיק {resource}'
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
-    c.execute(f"UPDATE resources SET {resource}={resource}-? WHERE user_id=?", (amount, user_id))
+    c.execute(f"UPDATE resources SET {resource}=COALESCE({resource},0)-? WHERE user_id=?", (amount, user_id))
     c.execute("INSERT INTO market (seller_id, resource, amount, price_per_unit, created_at) VALUES (?,?,?,?,?)", 
               (user_id, resource, amount, price, datetime.now().isoformat()))
     conn.commit()
@@ -48,7 +48,7 @@ def buy_from_market(buyer_id, listing_id, amount_requested):
         conn.close()
         return False, f'אין מספיק Gild, צריך {total_cost:.2f}'
     c.execute("UPDATE resources SET gild=gild-? WHERE user_id=?", (total_cost, buyer_id))
-    c.execute(f"UPDATE resources SET {resource}={resource}+? WHERE user_id=?", (amount_requested, buyer_id))
+    c.execute(f"UPDATE resources SET {resource}=COALESCE({resource},0)+? WHERE user_id=?", (amount_requested, buyer_id))
     c.execute("UPDATE resources SET gild=gild+? WHERE user_id=?", (total_cost, seller_id))
     if abs(amount_requested - avail_amount) < 1e-9:
         c.execute("DELETE FROM market WHERE id=?", (listing_id,))

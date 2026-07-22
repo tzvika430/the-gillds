@@ -80,7 +80,7 @@ def produce_by_workers(user_id, seconds):
         c.execute(f"UPDATE resources SET {resource}={resource}+? WHERE user_id=?", (amount, user_id))
         if worker_type == 'farmer':
             for byres, ratio in FARMER_BYPRODUCTS.items():
-                c.execute(f"UPDATE resources SET {byres}={byres}+? WHERE user_id=?", (amount*ratio, user_id))
+                c.execute(f"UPDATE resources SET {byres}=COALESCE({byres},0)+? WHERE user_id=?", (amount*ratio, user_id))
     conn.commit()
     conn.close()
 
@@ -280,7 +280,7 @@ def buy_from_system(user_id, resource, amount):
     if gild < cost:
         conn.close()
         return False, f'אין מספיק Gild, צריך {cost:.2f}, יש {gild}'
-    c.execute(f"UPDATE resources SET gild=gild-?, {resource}={resource}+? WHERE user_id=?", (cost, amount, user_id))
+    c.execute(f"UPDATE resources SET gild=gild-?, {resource}=COALESCE({resource},0)+? WHERE user_id=?", (cost, amount, user_id))
     conn.commit()
     conn.close()
     return True, 'OK'
@@ -295,7 +295,7 @@ def sell_resource(user_id, resource, amount, price):
         return False, f'אין מספיק {resource}'
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
-    c.execute(f"UPDATE resources SET {resource}={resource}-? WHERE user_id=?", (amount, user_id))
+    c.execute(f"UPDATE resources SET {resource}=COALESCE({resource},0)-? WHERE user_id=?", (amount, user_id))
     c.execute("INSERT INTO market (seller_id, resource, amount, price_per_unit, created_at) VALUES (?,?,?,?,?)", (user_id, resource, amount, price, datetime.now().isoformat()))
     conn.commit()
     conn.close()
@@ -332,7 +332,7 @@ def buy_from_market(buyer_id, listing_id, amount_requested):
         conn.close()
         return False, f'אין מספיק Gild, צריך {total_cost:.2f}'
     c.execute("UPDATE resources SET gild=gild-? WHERE user_id=?", (total_cost, buyer_id))
-    c.execute(f"UPDATE resources SET {resource}={resource}+? WHERE user_id=?", (amount_requested, buyer_id))
+    c.execute(f"UPDATE resources SET {resource}=COALESCE({resource},0)+? WHERE user_id=?", (amount_requested, buyer_id))
     c.execute("UPDATE resources SET gild=gild+? WHERE user_id=?", (total_cost, seller_id))
     if abs(amount_requested - avail_amount) < 1e-9:
         c.execute("DELETE FROM market WHERE id=?", (listing_id,))
