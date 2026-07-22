@@ -67,28 +67,6 @@ def get_or_create_worker_state(user_id):
     conn.close()
 
 
-def produce_by_workers(user_id, seconds):
-    conn = sqlite3.connect(DB_PATH)
-    c = conn.cursor()
-    c.execute("SELECT worker_type, count FROM workers WHERE user_id=?", (user_id,))
-    workers = c.fetchall()
-    for worker_type, count in workers:
-        if count <= 0 or worker_type not in WORKER_TO_RESOURCE:
-            continue
-        resource = WORKER_TO_RESOURCE[worker_type]
-        amount = count * seconds * WORKER_RATE
-        c.execute(f"UPDATE resources SET {resource}={resource}+? WHERE user_id=?", (amount, user_id))
-        if worker_type == 'farmer':
-            for byres, ratio in FARMER_BYPRODUCTS.items():
-                c.execute(f"UPDATE resources SET {byres}=COALESCE({byres},0)+? WHERE user_id=?", (amount*ratio, user_id))
-    conn.commit()
-    conn.close()
-
-
-
-    users = c.fetchall()
-    conn.close()
-    return users
 
 
 def init_db():

@@ -9,6 +9,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'handlers'))
 from config import *
 from database import *
+from economy_service import produce_by_workers
 
 from bot_instance import bot
 # ================ DATABASE ================
