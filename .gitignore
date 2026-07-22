@@ -1,23 +1,21 @@
-# Secrets
-.token_backup
-token.txt
-.env
-
-# Database
-*.db
-
-# Logs
-logs/
-*.log
-
-# Python
-__pycache__/
+backups/
 *.pyc
-
-# Termux backups
-*.bak*
+__pycache__/
+*.db
+bot_error.log
 *.save
 *.working
-
-# Experimental tests
-tests/experimental/
+bot.py.save
+bot.py.working
+debug*.py
+block*.txt
+*buildcmd*
+*patch_bot*
+*extract*
+move_init_funcs*
+msgline.txt
+token.txt
+market_block.txt
+market_commands.py
+market_handlers.py
+predator_block.txt
