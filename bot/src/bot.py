@@ -59,6 +59,10 @@ def background_ticker():
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'handlers'))
 from market_commands import *
 from admin_commands import *
+from basic_commands import *
+from resource_commands import *
+from session_commands import *
+from button_handler import *
 from commands import *
 
 print("✅ Gild Bot is running...")

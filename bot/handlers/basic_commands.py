@@ -1,0 +1,163 @@
+from config import *
+from database import update_time, get_resources, get_active_users
+from bot_instance import bot
+import sqlite3
+
+@bot.message_handler(commands=['start'])
+def start(message):
+    user_id = message.from_user.id
+    username = message.from_user.username or message.from_user.first_name or str(user_id)
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    c.execute("INSERT OR IGNORE INTO users (user_id, username) VALUES (?, ?)", (user_id, username))
+    c.execute("INSERT OR IGNORE INTO resources (user_id) VALUES (?)", (user_id,))
+    c.execute("INSERT OR IGNORE INTO workers (user_id, worker_type, count) VALUES (?, 'farmer', 1)", (user_id,))
+    c.execute("INSERT OR IGNORE INTO workers (user_id, worker_type, count) VALUES (?, 'lumberjack', 1)", (user_id,))
+    c.execute("INSERT OR IGNORE INTO buildings (user_id, building_type, count) VALUES (?, 'straw_house', 1)", (user_id,))
+    conn.commit()
+    conn.close()
+    msg = """🏰 **ברוך הבא ל-Gild Economy!** 🏰
+
+🎮 אתה רשום! הפרופיל שלך נוצר.
+📋 שלח /doc למדריך המלא
+👤 שלח /profile לפרופיל האישי שלך
+
+**הפקודות העיקריות:**
+
+פקודות זמינות עכשיו:
+/resources - המשאבים שלך
+/sell - מכירת משאב בשוק
+/buy - קניית משאב מהשוק
+/market - צפייה בשוק
+/leaderboard - לוח מובילים
+/profile - הפרופיל שלך
+/doc - מדריך מלא
+
+בקרוב:
+🏗️ בניה - הקמת מבנים
+⚔️ מלחמה - קרבות בין שחקנים
+🛡️ בחר אסטרטגיית לחימה"""
+    keyboard = get_main_keyboard()
+    bot.reply_to(message, msg, reply_markup=keyboard)
+
+@bot.message_handler(commands=['time'])
+def time_status(message):
+    update_time(message.from_user.id, message.from_user.username)
+    row = get_resources(message.from_user.id)
+    gild = row[5] if row else 0
+    bot.reply_to(message, f"⏰ זמן עודכן | 💰 Gild: {gild:.2f}")
+
+@bot.message_handler(commands=['profile'])
+def profile_cmd(message):
+    user_id = message.from_user.id
+    username = message.from_user.username or message.from_user.first_name or str(user_id)
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    c.execute("SELECT water, coal, copper, gold, wheat, soil, wood, stones, gild FROM resources WHERE user_id=?", (user_id,))
+    res = c.fetchone()
+    if not res:
+        bot.reply_to(message, "שלח /start קודם!")
+        conn.close()
+        return
+    water, coal, copper, gold, wheat, soil, wood, stones, gild = res
+    c.execute("SELECT worker_type, count FROM workers WHERE user_id=?", (user_id,))
+    workers = c.fetchall()
+    c.execute("SELECT building_type, count FROM buildings WHERE user_id=?", (user_id,))
+    buildings = c.fetchall()
+    conn.close()
+    workers_str = ", ".join([f"{wt}: {cnt}" for wt, cnt in workers]) if workers else "אין"
+    buildings_str = ", ".join([f"{bt}: {cnt}" for bt, cnt in buildings]) if buildings else "אין"
+    msg = f"""👤 **פרופיל שחקן - {username}**
+
+📦 **משאבים:**
+💧 מים: {water:.1f} | ⚫ פחם: {coal:.1f}
+🟠 נחושת: {copper:.1f} | 🥇 זהב: {gold:.1f}
+🌾 חיטה: {wheat:.1f} | 🟤 אדמה: {soil:.1f}
+🪵 עץ: {wood:.1f} | 🪨 אבנים: {stones:.1f}
+💰 Gild: {gild:.2f}
+
+👷 **עובדים:** {workers_str}
+🏗️ **מבנים:** {buildings_str}"""
+    bot.reply_to(message, msg)
+
+@bot.message_handler(commands=['balance'])
+def balance(message):
+    row = get_resources(message.from_user.id)
+    gild = row[5] if row else 0
+    bot.reply_to(message, f"💰 Gild: {gild:.2f}")
+
+@bot.message_handler(commands=['leaderboard'])
+def leaderboard(message):
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    c.execute("SELECT user_id, gild FROM resources ORDER BY gild DESC LIMIT 10")
+    rows = c.fetchall()
+    conn.close()
+    if not rows:
+        bot.reply_to(message, "אין שחקנים עדיין")
+        return
+    msg = "🏆 **טבלת מובילים:**\n"
+    for i, (uid, gild) in enumerate(rows, 1):
+        msg += f"{i}. {uid}: {gild:.1f} Gild\n"
+    bot.reply_to(message, msg)
+
+# ============ מקלדת פקודות ============
+
+def get_main_keyboard():
+    from telebot import types
+    keyboard = types.ReplyKeyboardMarkup(row_width=3, resize_keyboard=True)
+    keyboard.add(
+        types.KeyboardButton('📦 /resources'),
+        types.KeyboardButton('👤 /profile'),
+        types.KeyboardButton('📚 /doc')
+    )
+    keyboard.add(
+        types.KeyboardButton('🏪 /market'),
+        types.KeyboardButton('🏆 /leaderboard'),
+        types.KeyboardButton('⏰ /time')
+    )
+    keyboard.add(
+        types.KeyboardButton('🏗️ /build'),
+        types.KeyboardButton('👷 /hire'),
+        types.KeyboardButton('🛒 /store')
+    )
+    return keyboard
+
+def get_build_keyboard():
+    from telebot import types
+    keyboard = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
+    keyboard.add(
+        types.KeyboardButton('/build straw_house'),
+        types.KeyboardButton('/build brick_house'),
+        types.KeyboardButton('/build sawmill'),
+        types.KeyboardButton('↩️ חזור')
+    )
+    return keyboard
+
+def get_hire_keyboard():
+    from telebot import types
+    keyboard = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
+    keyboard.add(
+        types.KeyboardButton('/hire farmer'),
+        types.KeyboardButton('/hire lumberjack'),
+        types.KeyboardButton('/hire water_drawer'),
+        types.KeyboardButton('/hire coal_miner'),
+        types.KeyboardButton('/hire copper_miner'),
+        types.KeyboardButton('/hire gold_miner'),
+        types.KeyboardButton('↩️ חזור')
+    )
+    return keyboard
+
+def get_market_keyboard():
+    from telebot import types
+    keyboard = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
+    keyboard.add(
+        types.KeyboardButton('🏪 /market'),
+        types.KeyboardButton('📦 /resources')
+    )
+    keyboard.add(
+        types.KeyboardButton('/sell '),
+        types.KeyboardButton('/buy '),
+        types.KeyboardButton('↩️ חזור')
+    )
+    return keyboard
