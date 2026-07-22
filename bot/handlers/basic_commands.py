@@ -19,25 +19,16 @@ def start(message):
     conn.close()
     msg = """🏰 **ברוך הבא ל-Gild Economy!** 🏰
 
-🎮 אתה רשום! הפרופיל שלך נוצר.
-📋 שלח /doc למדריך המלא
-👤 שלח /profile לפרופיל האישי שלך
+🎮 משחק אסטרטגיה כלכלי בטלגרם
 
-**הפקודות העיקריות:**
+⛏️ **כריית משאבים** — farmer ו-lumberjack עובדים אוטומטית
+🏗️ **בניית מבנים** — straw_house, brick_house, sawmill
+👷 **שכירת עובדים** — water_drawer, coal_miner, copper_miner, gold_miner
+🏪 **שוק מסחר** — קנה ומכור משאבים לשחקנים אחרים
+⚔️ **מלחמה** — בקרוב!
 
-פקודות זמינות עכשיו:
-/resources - המשאבים שלך
-/sell - מכירת משאב בשוק
-/buy - קניית משאב מהשוק
-/market - צפייה בשוק
-/leaderboard - לוח מובילים
-/profile - הפרופיל שלך
-/doc - מדריך מלא
-
-בקרוב:
-🏗️ בניה - הקמת מבנים
-⚔️ מלחמה - קרבות בין שחקנים
-🛡️ בחר אסטרטגיית לחימה"""
+📚 לחץ /doc למדריך המלא
+👤 לחץ /profile לפרופיל שלך"""
     keyboard = get_main_keyboard()
     bot.reply_to(message, msg, reply_markup=keyboard)
 
@@ -84,6 +75,11 @@ def profile_cmd(message):
 🏗️ **מבנים:** {buildings_str}"""
     bot.reply_to(message, msg)
 
+@bot.message_handler(commands=['menu'])
+def menu_cmd(message):
+    keyboard = get_main_keyboard()
+    bot.send_message(message.chat.id, "📋 תפריט ראשי:", reply_markup=keyboard)
+
 @bot.message_handler(commands=['balance'])
 def balance(message):
     row = get_resources(message.from_user.id)
@@ -110,22 +106,20 @@ def leaderboard(message):
 def get_main_keyboard():
     from telebot import types
     keyboard = types.ReplyKeyboardMarkup(row_width=3, resize_keyboard=True)
-    keyboard.add(
-        types.KeyboardButton('📦 /resources'),
-        types.KeyboardButton('👤 /profile'),
-        types.KeyboardButton('📚 /doc')
-    )
-    keyboard.add(
-        types.KeyboardButton('🏪 /market'),
-        types.KeyboardButton('🏆 /leaderboard'),
-        types.KeyboardButton('⏰ /time')
-    )
-    keyboard.add(
-        types.KeyboardButton('🏗️ /build'),
-        types.KeyboardButton('👷 /hire'),
-        types.KeyboardButton('🛒 /store')
-    )
+    keyboard.add("📦 /resources", "👤 /profile", "📚 /doc")
+    keyboard.add("🏪 /market", "🏆 /leaderboard", "⏰ /time")
+    keyboard.add("🏗️ /build", "👷 /hire", "🛒 /store")
     return keyboard
+
+def send_with_menu(chat_id, text):
+    """שולח הודעה עם כפתורים"""
+    keyboard = get_main_keyboard()
+    bot.send_message(chat_id, text, reply_markup=keyboard)
+
+def reply_with_menu(message, text):
+    """עונה עם כפתורים"""
+    keyboard = get_main_keyboard()
+    bot.reply_to(message, text, reply_markup=keyboard)
 
 def get_build_keyboard():
     from telebot import types
