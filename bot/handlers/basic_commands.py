@@ -1,6 +1,7 @@
 from config import *
 from database import update_time, get_resources, get_active_users
 from bot_instance import bot
+from telebot import types
 import sqlite3
 
 @bot.message_handler(commands=['start'])
@@ -64,10 +65,13 @@ def profile_cmd(message):
     workers = c.fetchall()
     c.execute("SELECT building_type, count FROM buildings WHERE user_id=?", (user_id,))
     buildings = c.fetchall()
-    conn.close()
     workers_str = ", ".join([f"{wt}: {cnt}" for wt, cnt in workers]) if workers else "אין"
     buildings_str = ", ".join([f"{bt}: {cnt}" for bt, cnt in buildings]) if buildings else "אין"
-    msg = f"""👤 **פרופיל שחקן - {username}**
+    c.execute("SELECT display_name, kingdom FROM users WHERE user_id=?", (user_id,))
+    info = c.fetchone()
+    dname = info[0] if info and info[0] else username
+    kdom = info[1] if info and info[1] else "לא הוגדרה"
+    msg = f"""👤 **{dname}** | 🏰 **{kdom}**
 
 📦 **משאבים:**
 💧 מים: {water:.1f} | ⚫ פחם: {coal:.1f}
@@ -161,3 +165,51 @@ def get_market_keyboard():
         types.KeyboardButton('↩️ חזור')
     )
     return keyboard
+
+@bot.message_handler(commands=['deleteprofile'])
+def delete_profile_cmd(message):
+    user_id = message.from_user.id
+    
+    keyboard = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
+    keyboard.add("✅ כן, מחק הכל", "❌ לא, בטל")
+    
+    bot.send_message(user_id, """⚠️ **אזהרה!**
+    
+זה ימחק את כל הנתונים שלך:
+- משאבים
+- מבנים
+- עובדים
+- שם וממלכה
+
+אין אפשרות לשחזר!
+
+האם אתה בטוח?""", reply_markup=keyboard)
+
+@bot.message_handler(func=lambda m: m.text == '✅ כן, מחק הכל')
+def confirm_delete(message):
+    user_id = message.from_user.id
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    c.execute("DELETE FROM resources WHERE user_id=?", (user_id,))
+    c.execute("DELETE FROM workers WHERE user_id=?", (user_id,))
+    c.execute("DELETE FROM buildings WHERE user_id=?", (user_id,))
+    c.execute("DELETE FROM market WHERE seller_id=?", (user_id,))
+    c.execute("UPDATE users SET display_name=NULL, kingdom=NULL WHERE user_id=?", (user_id,))
+    conn.commit()
+    conn.close()
+    
+    keyboard = types.ReplyKeyboardMarkup(row_width=3, resize_keyboard=True)
+    keyboard.add("📦 /resources", "👤 /profile", "📚 /doc")
+    keyboard.add("🏪 /market", "🏆 /leaderboard", "⏰ /time")
+    keyboard.add("🏗️ /build", "👷 /hire", "🛒 /store")
+    
+    bot.send_message(user_id, "🗑️ הפרופיל נמחק.\nשלח /register ליצור פרופיל חדש, או /start להתחלה.", reply_markup=keyboard)
+
+@bot.message_handler(func=lambda m: m.text == '❌ לא, בטל')
+def cancel_delete(message):
+    keyboard = types.ReplyKeyboardMarkup(row_width=3, resize_keyboard=True)
+    keyboard.add("📦 /resources", "👤 /profile", "📚 /doc")
+    keyboard.add("🏪 /market", "🏆 /leaderboard", "⏰ /time")
+    keyboard.add("🏗️ /build", "👷 /hire", "🛒 /store")
+    
+    bot.send_message(message.from_user.id, "✅ המחיקה בוטלה.", reply_markup=keyboard)
