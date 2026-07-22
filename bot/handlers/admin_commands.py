@@ -66,3 +66,190 @@ def tests_cmd(message):
             bot.reply_to(message, f"❌ יש בעיה:\n{output[-800:]}")
     except Exception as e:
         bot.reply_to(message, f"שגיאה: {e}")
+
+@bot.message_handler(commands=['doc'])
+def doc_cmd(message):
+    msg = """🎮 **Gild Economy - מדריך שחקן**
+
+📌 **התחלה מהירה:**
+1️⃣ יש לך farmer ו-lumberjack שעובדים אוטומטית
+2️⃣ שלח /resources לראות מה יש לך
+3️⃣ שלח /profile לפרופיל האישי שלך
+
+🏗️ **בנייה:**
+/build brick_house — בית לבנים (אדמה+אבנים+עץ)
+/build sawmill — מנסרה לעובדי עץ
+
+👷 **עובדים:**
+/hire water_drawer — שואב מים (צריך brick_house)
+/hire coal_miner — כורה פחם (צריך brick_house)
+/hire copper_miner — כורה נחושת
+/hire gold_miner — כורה זהב
+
+🏪 **שוק:**
+/sell [משאב] [כמות] [מחיר] — פתיחת הצעה
+/market — צפייה בהצעות
+/buy [מספר] [כמות] — קנייה מהשוק
+/store [משאב] [כמות] — קנייה מהמערכת (1 Gild = 200)
+
+📦 **משאבים:**
+
+🏗️ **בנייה:**
+/build [מבנה] - straw_house, brick_house, sawmill
+
+👷 **עובדים:**
+/hire [סוג] - farmer, lumberjack, water_drawer, coal_miner, copper_miner, gold_miner
+
+🏪 **שוק:**
+/sell [משאב] [כמות] [מחיר] - פתיחת הצעה
+/buy [מספר] [כמות] - קנייה מהשוק
+/market - צפייה בהצעות
+/store [משאב] [כמות] - קנייה מהמערכת (1 Gild = 200)
+
+📦 **משאבים:**
+מים💧 פחם⚫ נחושת🟠 זהב🥇 חיטה🌾 אדמה🟤 עץ🪵 אבנים🪨
+
+💰 **מטבע:** Gild
+
+📊 **מידע:**
+/resources - המשאבים שלך
+/leaderboard - טבלת מובילים
+/time - זמן משחק"""
+    bot.reply_to(message, msg)
+
+@bot.message_handler(commands=['ops'])
+def ops_cmd(message):
+    if not is_admin(message.from_user.id):
+        return
+    import sqlite3
+    from config import DB_PATH
+    parts = message.text.split()
+    subcmd = parts[1] if len(parts) > 1 else "help"
+    
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    
+    if subcmd == "users":
+        c.execute("SELECT user_id, username FROM users LIMIT 20")
+        rows = c.fetchall()
+        msg = "👥 **משתמשים:**\n"
+        for uid, uname in rows:
+            c2 = conn.cursor()
+            c2.execute("SELECT gild FROM resources WHERE user_id=?", (uid,))
+            g = c2.fetchone()
+            gild = g[0] if g else 0
+            msg += f"• {uname or uid}: {gild:.1f} Gild\n"
+        bot.reply_to(message, msg)
+    
+    elif subcmd == "market":
+        c.execute("SELECT id, seller_id, resource, amount, price_per_unit FROM market LIMIT 20")
+        rows = c.fetchall()
+        if rows:
+            msg = "🏪 **הצעות שוק:**\n"
+            for lid, sid, res, amt, price in rows:
+                msg += f"#{lid} | {res} | {amt:.1f} | {price:.2f} Gild\n"
+        else:
+            msg = "📭 אין הצעות"
+        bot.reply_to(message, msg)
+    
+    elif subcmd == "workers":
+        c.execute("SELECT user_id, worker_type, count FROM workers LIMIT 30")
+        rows = c.fetchall()
+        msg = "👷 **עובדים:**\n"
+        for uid, wt, cnt in rows:
+            msg += f"• {uid}: {wt} x{cnt}\n"
+        bot.reply_to(message, msg)
+    
+    elif subcmd == "buildings":
+        c.execute("SELECT user_id, building_type, count FROM buildings LIMIT 30")
+        rows = c.fetchall()
+        msg = "🏠 **מבנים:**\n"
+        for uid, bt, cnt in rows:
+            msg += f"• {uid}: {bt} x{cnt}\n"
+        bot.reply_to(message, msg)
+    
+    elif subcmd == "sql":
+        if len(parts) < 3:
+            bot.reply_to(message, "שימוש: /ops sql [שאילתה]")
+        else:
+            query = " ".join(parts[2:])
+            try:
+                c.execute(query)
+                rows = c.fetchall()[:20]
+                msg = f"📊 תוצאה ({len(rows)} שורות):\n"
+                for row in rows:
+                    msg += str(row) + "\n"
+                bot.reply_to(message, msg[-2000:])
+            except Exception as e:
+                bot.reply_to(message, f"❌ {e}")
+    
+    elif subcmd == "help":
+        msg = """🔧 **פקודות Ops:**
+/ops users - רשימת משתמשים
+/ops market - הצעות שוק
+/ops workers - עובדים
+/ops buildings - מבנים
+/ops sql [שאילתה] - הרצת SQL
+/ops help - עזרה"""
+        bot.reply_to(message, msg)
+    
+    else:
+        bot.reply_to(message, f"לא מוכר. /ops help לעזרה")
+    
+    conn.close()
+
+@bot.message_handler(commands=['pay'])
+def pay_cmd(message):
+    msg = """💳 **Gild Economy - תשלום**
+
+⭐ חודשי: **2.99 USDT** | 💎 רבעוני: **6.99 USDT**
+
+📤 רשת **TON**
+`UQDhfyUPSJ8x9xnoeccTl55PEny7zUvDW8UabZ7PdDo52noF`
+
+✅ אחרי העברה שלח /paid"""
+    bot.reply_to(message, msg)
+
+@bot.message_handler(commands=['paid'])
+def paid_cmd(message):
+    user_id = message.from_user.id
+    parts = message.text.split()
+    if len(parts) < 2:
+        bot.reply_to(message, "שימוש: /paid [מזהה עסקה]\nלדוגמה: /paid 123456789")
+        return
+    tx_id = parts[1]
+    # שולח התראה למנהל
+    admin_msg = f"""💰 **התראת תשלום!**
+
+משתמש: `{user_id}`
+מזהה עסקה: `{tx_id}`
+
+לאישור: `/approve {user_id}`"""
+    for admin_id in ADMIN_IDS:
+        try:
+            bot.send_message(admin_id, admin_msg)
+        except:
+            pass
+    bot.reply_to(message, "✅ בקשת התשלום נשלחה לאישור. תקבל הודעה אחרי האישור.")
+
+@bot.message_handler(commands=['approve'])
+def approve_cmd(message):
+    if not is_admin(message.from_user.id):
+        return
+    parts = message.text.split()
+    if len(parts) != 2:
+        bot.reply_to(message, "שימוש: /approve user_id")
+        return
+    target_id = int(parts[1])
+    import sqlite3
+    from config import DB_PATH
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    c.execute("UPDATE users SET is_paid=1 WHERE user_id=?", (target_id,))
+    conn.commit()
+    conn.close()
+    bot.reply_to(message, f"✅ תשלום אושר למשתמש {target_id}")
+    try:
+        bot.send_message(target_id, "✅ התשלום אושר! המשאבים שלך ממשיכים לייצר. תודה!")
+    except:
+        pass
