@@ -6,6 +6,7 @@ from datetime import datetime, timedelta
 import threading
 import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'services'))
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'handlers'))
 from config import *
 from database import *
 
@@ -55,6 +56,7 @@ def background_ticker():
 
 # ================ COMMANDS ================
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'handlers'))
+from market_commands import *
 from commands import *
 
 print("✅ Gild Bot is running...")
