@@ -9,7 +9,9 @@ def produce_by_workers(user_id, seconds):
     for worker_type, count in workers:
         if count <= 0 or worker_type not in WORKER_TO_RESOURCE:
             continue
-        resource = WORKER_TO_RESOURCE[worker_type]
+        resource = WORKER_TO_RESOURCE.get(worker_type)
+        if resource is None:
+            continue  # soldier/commander/general לא מייצרים
         amount = count * seconds * WORKER_RATE
         c.execute(f"UPDATE resources SET {resource}=COALESCE({resource},0)+? WHERE user_id=?", (amount, user_id))
         if worker_type == 'farmer':

@@ -35,7 +35,7 @@ def btn_time(message):
 def btn_build(message):
     keyboard = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
     keyboard.add("/build straw_house", "/build brick_house")
-    keyboard.add("/build sawmill")
+    keyboard.add("/build sawmill", "/build barracks")
     keyboard.add("↩️ תפריט ראשי")
     bot.send_message(message.chat.id, "🏗️ בחר מבנה:", reply_markup=keyboard)
 

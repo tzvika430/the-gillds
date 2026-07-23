@@ -1,5 +1,5 @@
 import sqlite3
-from config import DB_PATH, BUILDING_COST, HIRE_COST, WORKER_BUILDING, BUILDING_CAPACITY, DEFAULT_BUILDING_CAPACITY
+from config import DB_PATH, BUILDING_COST, HIRE_COST, WORKER_BUILDING, BUILDING_CAPACITY, DEFAULT_BUILDING_CAPACITY, SOLDIER_REQUIREMENTS
 
 def build_building(user_id, building_type):
     if building_type not in BUILDING_COST:
@@ -35,6 +35,15 @@ def hire_worker(user_id, worker_type):
     if gild < cost:
         conn.close()
         return False, f'אין מספיק Gild, צריך {cost}, יש {gild}'
+    # בדיקת היררכיית חיילים
+    if worker_type in SOLDIER_REQUIREMENTS:
+        req_type, req_count = SOLDIER_REQUIREMENTS[worker_type]
+        c.execute("SELECT COALESCE(SUM(count),0) FROM workers WHERE user_id=? AND worker_type=?", (user_id, req_type))
+        current = c.fetchone()[0]
+        if current < req_count:
+            conn.close()
+            return False, f'צריך {req_count} {req_type} כדי לגייס {worker_type} (יש לך {current})'
+    
     if worker_type in WORKER_BUILDING:
         building_type = WORKER_BUILDING[worker_type]
         c.execute('SELECT count FROM buildings WHERE user_id=? AND building_type=?',
