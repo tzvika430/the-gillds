@@ -205,10 +205,10 @@ def pay_cmd(message):
 ⭐ חודשי: **2.99 USDT** | 💎 רבעוני: **6.99 USDT**
 
 📤 רשת **TON**
-`UQDhfyUPSJ8x9xnoeccTl55PEny7zUvDW8UabZ7PdDo52noF`
 
 ✅ אחרי העברה שלח /paid"""
     bot.reply_to(message, msg)
+    bot.send_message(message.chat.id, "`UQDhfyUPSJ8x9xnoeccTl55PEny7zUvDW8UabZ7PdDo52noF`")
 
 @bot.message_handler(commands=['paid'])
 def paid_cmd(message):
