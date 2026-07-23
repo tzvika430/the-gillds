@@ -25,9 +25,10 @@ def start(message):
 🏗️ **בניית מבנים** — straw_house, brick_house, sawmill
 👷 **שכירת עובדים** — water_drawer, coal_miner, copper_miner, gold_miner
 🏪 **שוק מסחר** — קנה ומכור משאבים לשחקנים אחרים
-⚔️ **מלחמה** — בקרוב!
+⚔️ **מלחמה** — `/attack`
 
 📚 לחץ /doc למדריך המלא
+📋 **תפריט** — `/menu`
 👤 לחץ /profile לפרופיל שלך"""
     keyboard = get_main_keyboard()
     bot.reply_to(message, msg, reply_markup=keyboard)
