@@ -24,7 +24,7 @@ init_predator_state()
 # ================ HELPER FUNCTIONS ================
 def background_ticker():
     while True:
-        time.sleep(10)
+        time.sleep(60)
         for user_id, username in get_active_users():
             try:
                 update_time(user_id, username)
@@ -37,7 +37,7 @@ def background_ticker():
         conn.close()
         for user_id in all_worker_users:
             try:
-                produce_by_workers(user_id, 10)
+                produce_by_workers(user_id, 60)
             except Exception as e:
                 print(f"⚠️ שגיאה בייצור פועלים למשתמש {user_id}: {e}")
         try:
@@ -63,6 +63,7 @@ from basic_commands import *
 from resource_commands import *
 from session_commands import *
 from register_handler import *
+from trade_handler import *
 from button_handler import *
 from commands import *
 
