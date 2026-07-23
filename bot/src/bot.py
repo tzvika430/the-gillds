@@ -63,6 +63,7 @@ from basic_commands import *
 from resource_commands import *
 from session_commands import *
 from register_handler import *
+from attack_handler import *
 from trade_handler import *
 from button_handler import *
 from commands import *

@@ -190,6 +190,12 @@ def get_eligible_predator_targets(needed):
     c.execute("SELECT DISTINCT user_id FROM workers WHERE count > 0")
     user_ids = [r[0] for r in c.fetchall()]
     eligible = []
+    # חישוב הפחתת סיכון מחיילים
+    soldier_reduction = 0
+    for uid in user_ids:
+        c.execute("SELECT worker_type, count FROM workers WHERE user_id=? AND worker_type IN ('soldier','commander','general')", (uid,))
+        for wt, cnt in c.fetchall():
+            soldier_reduction += SOLDIER_RISK_REDUCTION.get(wt, 0) * cnt
     for uid in user_ids:
         c.execute("SELECT worker_type, count FROM workers WHERE user_id=? AND count>0", (uid,))
         rows = c.fetchall()
@@ -239,6 +245,17 @@ def check_and_trigger_predator_event():
     needed = TIGER_EAT_COUNT if predator == "tiger" else LION_EAT_COUNT
     targets = get_eligible_predator_targets(needed)
     set_last_predator_event(now)
+    if not targets:
+        return None
+    # בדיקת הפחתת סיכון מחיילים
+    conn2 = sqlite3.connect(DB_PATH)
+    c2 = conn2.cursor()
+    for uid in targets[:]:
+        c2.execute("SELECT worker_type, count FROM workers WHERE user_id=? AND worker_type IN ('soldier','commander','general')", (uid,))
+        reduction = sum(SOLDIER_RISK_REDUCTION.get(wt, 0) * cnt for wt, cnt in c2.fetchall())
+        if random.random() < reduction:
+            targets.remove(uid)
+    conn2.close()
     if not targets:
         return None
     user_id = random.choice(targets)
@@ -327,3 +344,32 @@ def get_active_users():
     rows = c.fetchall()
     conn.close()
     return rows
+
+def check_subscription(user_id):
+    """בודק אם שחקן בתוקף. מחזיר (is_active, days_left, msg)"""
+    import sqlite3
+    from datetime import datetime
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    c.execute("SELECT created_at, is_paid FROM users WHERE user_id=?", (user_id,))
+    row = c.fetchone()
+    conn.close()
+    
+    if not row or not row[0]:
+        return True, 999, ""
+    
+    created = datetime.fromisoformat(row[0])
+    is_paid = row[1]
+    days_since = (datetime.now() - created).days
+    days_left = 7 - days_since
+    
+    if is_paid:
+        return True, 999, ""
+    if days_left > 1:
+        return True, days_left, ""
+    elif days_left == 1:
+        return True, 1, "⚠️ מחר מסתיימת תקופת הניסיון!"
+    elif days_left == 0:
+        return True, 0, "⚠️ היום האחרון בחינם!"
+    else:
+        return False, days_left, "🔒 תקופת הניסיון הסתיימה. /pay להמשך."
