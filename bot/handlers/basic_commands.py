@@ -10,6 +10,14 @@ def start(message):
     username = message.from_user.username or message.from_user.first_name or str(user_id)
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
+    # בדוק אם רשום - אם לא, שלח להרשמה
+    c.execute("SELECT display_name FROM users WHERE user_id=?", (user_id,))
+    existing = c.fetchone()
+    if not existing or not existing[0]:
+        conn.close()
+        from register_handler import start_register
+        start_register(message)
+        return
     c.execute("INSERT OR IGNORE INTO users (user_id, username) VALUES (?, ?)", (user_id, username))
     c.execute("INSERT OR IGNORE INTO resources (user_id) VALUES (?)", (user_id,))
     c.execute("INSERT OR IGNORE INTO workers (user_id, worker_type, count) VALUES (?, 'farmer', 1)", (user_id,))
