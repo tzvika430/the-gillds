@@ -54,6 +54,19 @@ def background_ticker():
                 bot.send_message(pid, msg)
         except Exception as e:
             print(f"⚠️ שגיאה באירוע טורף: {e}")
+        # ייצור
+        try:
+            conn = sqlite3.connect(DB_PATH)
+            c = conn.cursor()
+            c.execute("SELECT DISTINCT user_id FROM workers")
+            for (uid,) in c.fetchall():
+                try:
+                    produce_by_workers(uid, 30)
+                except:
+                    pass
+            conn.close()
+        except:
+            pass
 
 # ================ COMMANDS ================
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'handlers'))
