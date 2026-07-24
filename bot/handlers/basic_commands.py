@@ -99,15 +99,16 @@ def balance(message):
 def leaderboard(message):
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
-    c.execute("SELECT user_id, gild FROM resources ORDER BY gild DESC LIMIT 10")
+    c.execute("SELECT r.user_id, r.gild, u.display_name, u.username FROM resources r LEFT JOIN users u ON r.user_id=u.user_id ORDER BY r.gild DESC LIMIT 10")
     rows = c.fetchall()
     conn.close()
     if not rows:
         bot.reply_to(message, "אין שחקנים עדיין")
         return
     msg = "🏆 **טבלת מובילים:**\n"
-    for i, (uid, gild) in enumerate(rows, 1):
-        msg += f"{i}. {uid}: {gild:.1f} Gild\n"
+    for i, (uid, gild, dname, uname) in enumerate(rows, 1):
+        name = dname if dname else (uname or uid)
+        msg += f"{i}. {name}: {gild:.1f} Gild\n"
     bot.reply_to(message, msg)
 
 # ============ מקלדת פקודות ============
