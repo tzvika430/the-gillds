@@ -57,8 +57,8 @@ def btn_store(message):
 @bot.message_handler(func=lambda m: m.text == '↩️ תפריט ראשי')
 def btn_back(message):
     keyboard = types.ReplyKeyboardMarkup(row_width=3, resize_keyboard=True)
-    keyboard.add("👤 /profile", "📚 /doc", "📦 /resources")
-    keyboard.add("🏪 /market", "🏆 /leaderboard", "⏰ /time")
+    keyboard.add("👤 /profile", "📚 /doc", "⚔️ /attack")
+    keyboard.add("🏪 /market", "🏆 /leaderboard", "💳 /pay")
     keyboard.add("🏗️ /build", "👷 /hire", "🛒 /store")
     keyboard.add("⚔️ /attack", "📝 /register")
     keyboard.add("💳 /pay", "📢 /shout")
