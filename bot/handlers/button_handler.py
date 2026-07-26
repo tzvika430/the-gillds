@@ -57,10 +57,56 @@ def btn_store(message):
 @bot.message_handler(func=lambda m: m.text == '↩️ תפריט ראשי')
 def btn_back(message):
     keyboard = types.ReplyKeyboardMarkup(row_width=3, resize_keyboard=True)
-    keyboard.add("👤 /profile", "📚 /doc", "⚔️ /attack")
-    keyboard.add("🏪 /market", "🏆 /leaderboard", "💳 /pay")
-    keyboard.add("🏗️ /build", "👷 /hire", "🛒 /store")
-    keyboard.add("⚔️ /attack", "📝 /register")
-    keyboard.add("💳 /pay", "📢 /shout")
-    keyboard.add("📋 /board", "📋 /menu")
+    keyboard.add("👤 פרופיל", "📚 מדריך", "⚔️ קרב")
+    keyboard.add("🏪 שוק", "🏆 מובילים", "💳 תשלום")
+    keyboard.add("🏗️ בניה", "👷 עובדים", "🛒 חנות")
+    keyboard.add("⚔️ קרב", "📝 הרשמה")
+    keyboard.add("💳 תשלום", "📢 צעקה")
+    keyboard.add("📋 לוח", "📋 תפריט")
     bot.send_message(message.chat.id, "תפריט ראשי:", reply_markup=keyboard)
+
+
+@bot.message_handler(func=lambda m: m.text == "👤 פרופיל")
+def btn_profile_he(message):
+    from basic_commands import profile_cmd
+    profile_cmd(message)
+
+@bot.message_handler(func=lambda m: m.text == "📚 מדריך")
+def btn_doc_he(message):
+    from admin_commands import doc_cmd
+    doc_cmd(message)
+
+@bot.message_handler(func=lambda m: m.text == "⚔️ קרב")
+def btn_attack_he(message):
+    from attack_handler import attack_cmd
+    attack_cmd(message)
+
+@bot.message_handler(func=lambda m: m.text == "🏪 שוק")
+def btn_market_he(message):
+    from trade_handler import trade_menu
+    trade_menu(message)
+
+@bot.message_handler(func=lambda m: m.text == "🏆 מובילים")
+def btn_leaderboard_he(message):
+    from basic_commands import leaderboard
+    leaderboard(message)
+
+@bot.message_handler(func=lambda m: m.text == "💳 תשלום")
+def btn_pay_he(message):
+    from admin_commands import pay_cmd
+    pay_cmd(message)
+
+@bot.message_handler(func=lambda m: m.text == "📝 הרשמה")
+def btn_register_he(message):
+    from register_handler import start_register
+    start_register(message)
+
+@bot.message_handler(func=lambda m: m.text == "📢 צעקה")
+def btn_shout_he(message):
+    from chat_handler import shout_cmd
+    shout_cmd(message)
+
+@bot.message_handler(func=lambda m: m.text == "📋 לוח")
+def btn_board_he(message):
+    from chat_handler import board_cmd
+    board_cmd(message)

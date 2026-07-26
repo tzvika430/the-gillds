@@ -116,9 +116,9 @@ def leaderboard(message):
 def get_main_keyboard():
     from telebot import types
     keyboard = types.ReplyKeyboardMarkup(row_width=3, resize_keyboard=True)
-    keyboard.add("👤 /profile", "📚 /doc", "⚔️ /attack")
-    keyboard.add("🏪 /market", "🏆 /leaderboard", "💳 /pay")
-    keyboard.add("🏗️ /build", "👷 /hire", "🛒 /store")
+    keyboard.add("👤 פרופיל", "📚 מדריך", "⚔️ קרב")
+    keyboard.add("🏪 שוק", "🏆 מובילים", "💳 תשלום")
+    keyboard.add("🏗️ בניה", "👷 עובדים", "🛒 חנות")
     return keyboard
 
 def send_with_menu(chat_id, text):
@@ -203,17 +203,17 @@ def confirm_delete(message):
     conn.close()
     
     keyboard = types.ReplyKeyboardMarkup(row_width=3, resize_keyboard=True)
-    keyboard.add("👤 /profile", "📚 /doc", "⚔️ /attack")
-    keyboard.add("🏪 /market", "🏆 /leaderboard", "💳 /pay")
-    keyboard.add("🏗️ /build", "👷 /hire", "🛒 /store")
+    keyboard.add("👤 פרופיל", "📚 מדריך", "⚔️ קרב")
+    keyboard.add("🏪 שוק", "🏆 מובילים", "💳 תשלום")
+    keyboard.add("🏗️ בניה", "👷 עובדים", "🛒 חנות")
     
     bot.send_message(user_id, "🗑️ הפרופיל נמחק.\nשלח /register ליצור פרופיל חדש, או /start להתחלה.", reply_markup=keyboard)
 
 @bot.message_handler(func=lambda m: m.text == '❌ לא, בטל')
 def cancel_delete(message):
     keyboard = types.ReplyKeyboardMarkup(row_width=3, resize_keyboard=True)
-    keyboard.add("👤 /profile", "📚 /doc", "⚔️ /attack")
-    keyboard.add("🏪 /market", "🏆 /leaderboard", "💳 /pay")
-    keyboard.add("🏗️ /build", "👷 /hire", "🛒 /store")
+    keyboard.add("👤 פרופיל", "📚 מדריך", "⚔️ קרב")
+    keyboard.add("🏪 שוק", "🏆 מובילים", "💳 תשלום")
+    keyboard.add("🏗️ בניה", "👷 עובדים", "🛒 חנות")
     
     bot.send_message(message.from_user.id, "✅ המחיקה בוטלה.", reply_markup=keyboard)
