@@ -53,6 +53,11 @@ def handle_all_buttons(message):
         bot.send_message(message.chat.id, "👷 בחר עובד:", reply_markup=keyboard)
         return
     
+    if text == "🛒 חנות":
+        from resource_commands import store_cmd
+        store_cmd(message)
+        return
+    
     if text == "📢 קהילה":
         keyboard = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
         keyboard.add("📢 /shout", "📋 /board")

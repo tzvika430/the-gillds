@@ -54,6 +54,12 @@ def background_ticker():
                 bot.send_message(pid, msg)
         except Exception as e:
             print(f"⚠️ שגיאה באירוע טורף: {e}")
+        # צריכה יומית
+        try:
+            from economy_service import consume_daily_resources
+            consume_daily_resources()
+        except:
+            pass
         # ייצור
         try:
             conn = sqlite3.connect(DB_PATH)
@@ -73,6 +79,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'
 from market_commands import *
 from admin_commands import *
 from basic_commands import *
+from chat_handler import *
 from resource_commands import *
 from session_commands import *
 from register_handler import *
