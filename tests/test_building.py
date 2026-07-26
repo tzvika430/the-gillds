@@ -23,7 +23,7 @@ c.execute("CREATE TABLE IF NOT EXISTS buildings (user_id INTEGER, building_type 
 c.execute("CREATE TABLE IF NOT EXISTS workers (user_id INTEGER, worker_type TEXT, count INTEGER, PRIMARY KEY(user_id, worker_type))")
 c.execute("INSERT OR IGNORE INTO users (user_id, username) VALUES (?, ?)", (1, "test"))
 c.execute("INSERT OR IGNORE INTO resources (user_id) VALUES (?)", (1,))
-c.execute("UPDATE resources SET gild=50, wheat=500, soil=500, wood=500, stones=500 WHERE user_id=1")
+c.execute("UPDATE resources SET gild=500, wheat=5000, soil=5000, wood=5000, stones=5000, water=5000, coal=5000, copper=5000, gold=5000 WHERE user_id=1")
 conn.commit()
 conn.close()
 

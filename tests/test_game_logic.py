@@ -29,7 +29,7 @@ for col in ['wheat', 'soil', 'wood', 'stones', 'gild']:
     except: c.execute(f"ALTER TABLE resources ADD COLUMN {col} REAL DEFAULT 0")
 c.execute("INSERT OR IGNORE INTO users (user_id, username) VALUES (?, ?)", (1, "testuser"))
 c.execute("INSERT OR IGNORE INTO resources (user_id) VALUES (?)", (1,))
-c.execute("UPDATE resources SET gild=10, soil=200, wood=200, stones=200 WHERE user_id=1")
+c.execute("UPDATE resources SET gild=10, soil=200, wood=200, stones=200, water=100, coal=100, copper=100, gold=100, wheat=200 WHERE user_id=1")
 conn.commit(); conn.close()
 
 print("=" * 50)
@@ -56,7 +56,7 @@ ok, msg = hire_worker(1, "lumberjack")
 check("2nd lumberjack blocked without sawmill", ok == False)
 
 c = conn = sqlite3.connect(test_db.name); c = conn.cursor()
-c.execute("UPDATE resources SET wheat=200, soil=300, wood=300 WHERE user_id=1")
+c.execute("UPDATE resources SET wheat=200, soil=300, wood=300, coal=100 WHERE user_id=1")
 conn.commit(); conn.close()
 
 ok, msg = build_building(1, "sawmill")
