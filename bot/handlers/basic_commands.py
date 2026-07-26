@@ -3,6 +3,7 @@ from database import update_time, get_resources, get_active_users
 from bot_instance import bot
 from telebot import types
 import sqlite3
+import os
 
 @bot.message_handler(commands=['start'])
 def start(message):

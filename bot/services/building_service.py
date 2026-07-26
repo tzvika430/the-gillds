@@ -6,9 +6,9 @@ def build_building(user_id, building_type):
         return False, 'מבנה לא מוכר'
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
-    c.execute('SELECT wheat, soil, wood, stones FROM resources WHERE user_id=?', (user_id,))
-    wheat, soil, wood, stones = c.fetchone()
-    have = {'wheat': wheat, 'soil': soil, 'wood': wood, 'stones': stones}
+    c.execute('SELECT water, coal, copper, gold, wheat, soil, wood, stones FROM resources WHERE user_id=?', (user_id,))
+    water, coal, copper, gold, wheat, soil, wood, stones = c.fetchone()
+    have = {'water': water, 'coal': coal, 'copper': copper, 'gold': gold, 'wheat': wheat, 'soil': soil, 'wood': wood, 'stones': stones}
     cost = BUILDING_COST[building_type]
     for res, amt in cost.items():
         if have[res] < amt:
