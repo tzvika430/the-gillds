@@ -30,7 +30,7 @@ BUTTON_ACTIONS = {
     "👑 גנרל": ("hire_general", None),
 }
 
-@bot.message_handler(func=lambda m: m.text in BUTTON_ACTIONS or m.text in ["🏗️ בניה", "👷 עובדים", "📢 קהילה", "↩️ תפריט ראשי"])
+@bot.message_handler(func=lambda m: m.text in BUTTON_ACTIONS or m.text in ["🏗️ בניה", "👷 עובדים", "📢 קהילה", "🛒 חנות", "↩️ תפריט ראשי"])
 def handle_all_buttons(message):
     text = message.text
     
@@ -54,8 +54,19 @@ def handle_all_buttons(message):
         return
     
     if text == "🛒 חנות":
-        from resource_commands import store_cmd
-        store_cmd(message)
+        print("DEBUG: חנות נלחץ!")
+        keyboard = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
+        keyboard.add("🛒 קנה מהמערכת", "💰 מכור למערכת")
+        keyboard.add("↩️ תפריט ראשי")
+        bot.send_message(message.chat.id, "🛒 **חנות המערכת**\n\nקנייה: 200 יח׳ = 1 Gild\nמכירה: 100 יח׳ = 1 Gild", reply_markup=keyboard)
+        return
+    
+    if text == "🛒 קנה מהמערכת":
+        bot.send_message(message.chat.id, "🛒 **קנייה מהמערכת**\n\nשימוש: /store [משאב] [כמות]\nלדוגמה: /store wood 200\n\nשער: 200 יחידות = 1 Gild")
+        return
+    
+    if text == "💰 מכור למערכת":
+        bot.send_message(message.chat.id, "💰 **מכירה למערכת**\n\nשימוש: /sellstore [משאב] [כמות]\nלדוגמה: /sellstore wheat 200\n\nשער: 100 יחידות = 1 Gild")
         return
     
     if text == "📢 קהילה":
