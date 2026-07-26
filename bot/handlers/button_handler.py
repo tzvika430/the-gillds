@@ -45,6 +45,8 @@ def btn_hire(message):
     keyboard.add("/hire farmer", "/hire lumberjack")
     keyboard.add("/hire water_drawer", "/hire coal_miner")
     keyboard.add("/hire copper_miner", "/hire gold_miner")
+    keyboard.add("/hire soldier", "/hire commander")
+    keyboard.add("/hire general")
     keyboard.add("↩️ תפריט ראשי")
     bot.send_message(message.chat.id, "👷 בחר עובד:", reply_markup=keyboard)
 
@@ -55,7 +57,10 @@ def btn_store(message):
 @bot.message_handler(func=lambda m: m.text == '↩️ תפריט ראשי')
 def btn_back(message):
     keyboard = types.ReplyKeyboardMarkup(row_width=3, resize_keyboard=True)
-    keyboard.add("📦 /resources", "👤 /profile", "📚 /doc")
+    keyboard.add("👤 /profile", "📚 /doc", "📦 /resources")
     keyboard.add("🏪 /market", "🏆 /leaderboard", "⏰ /time")
     keyboard.add("🏗️ /build", "👷 /hire", "🛒 /store")
+    keyboard.add("⚔️ /attack", "📝 /register")
+    keyboard.add("💳 /pay", "📢 /shout")
+    keyboard.add("📋 /board", "📋 /menu")
     bot.send_message(message.chat.id, "תפריט ראשי:", reply_markup=keyboard)

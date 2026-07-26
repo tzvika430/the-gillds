@@ -92,6 +92,13 @@ def doc_cmd(message):
 /buy [מספר] [כמות] — קנייה מהשוק
 /store [משאב] [כמות] — קנייה מהמערכת (1 Gild = 200)
 
+⚔️ **חיילים ומלחמה:**
+/build barracks — בסיס צבאי
+/hire soldier — חייל (2 Gild)
+/hire commander — מפקד (10 Gild, צריך 6 soldiers)
+/hire general — גנרל (30 Gild, צריך 3 commanders)
+/attack — תקוף שחקן אחר! (10% שלל + 1 Gild)
+
 📦 **משאבים:**
 
 🏗️ **בנייה:**
@@ -114,7 +121,11 @@ def doc_cmd(message):
 📊 **מידע:**
 /resources - המשאבים שלך
 /leaderboard - טבלת מובילים
-/time - זמן משחק"""
+/time - זמן משחק
+
+📢 **צ'אט:**
+/shout [הודעה] - שלח לכולם
+/board - לוח מודעות"""
     bot.reply_to(message, msg)
 
 @bot.message_handler(commands=['ops'])
