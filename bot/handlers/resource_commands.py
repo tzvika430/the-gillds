@@ -94,6 +94,49 @@ def store_cmd(message):
         return
     ok, msg = buy_from_system(message.from_user.id, resource, amount)
     if ok:
-        bot.reply_to(message, f'✅ קנית {amount} {resource} מהמערכת')
+        cost = amount / NPC_BUY_RATE
+        bot.reply_to(message, f'✅ קנית {amount} {resource} מהמערכת\n💰 עלות: {cost:.2f} Gild\n⏰ שער: 1 Gild = {NPC_BUY_RATE} יחידות')
     else:
         bot.reply_to(message, f'❌ {msg}')
+
+
+@bot.message_handler(commands=['sellstore'])
+def sellstore_cmd(message):
+    """מכור משאבים למערכת"""
+    update_time(message.from_user.id, message.from_user.username)
+    parts = message.text.split()
+    if len(parts) != 3:
+        names = ', '.join(ALL_RESOURCE_IDX.keys())
+        bot.reply_to(message, f'שימוש: /sellstore משאב כמות\nאפשרויות: {names}\nשער: {int(NPC_BUY_RATE/2)} יחידות = 1 Gild (חצי ממחיר הקנייה)')
+        return
+    resource = parts[1]
+    try: amount = float(parts[2])
+    except ValueError:
+        bot.reply_to(message, 'כמות חייבת להיות מספר')
+        return
+    if amount <= 0:
+        bot.reply_to(message, 'כמות חייבת להיות חיובית')
+        return
+    
+    # בדוק שיש מספיק
+    row = get_resources(message.from_user.id)
+    if resource not in ALL_RESOURCE_IDX:
+        bot.reply_to(message, 'משאב לא מוכר')
+        return
+    idx = ALL_RESOURCE_IDX[resource]
+    if idx >= len(row) or row[idx] < amount:
+        bot.reply_to(message, f'אין מספיק {resource}')
+        return
+    
+    # חצי מחיר - מרוויחים פחות ממכירה לשחקנים
+    sell_rate = NPC_BUY_RATE / 2
+    earnings = amount / sell_rate
+    
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    c.execute(f"UPDATE resources SET {resource}=COALESCE({resource},0)-? WHERE user_id=?", (amount, message.from_user.id))
+    c.execute("UPDATE resources SET gild=gild+? WHERE user_id=?", (earnings, message.from_user.id))
+    conn.commit()
+    conn.close()
+    
+    bot.reply_to(message, f'✅ מכרת {amount} {resource} למערכת\n💰 קיבלת: {earnings:.2f} Gild\n⏰ שער: {int(sell_rate)} יחידות = 1 Gild')
