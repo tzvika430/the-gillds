@@ -1,4 +1,5 @@
-from config import RESOURCE_EMOJI
+import sqlite3
+from config import RESOURCE_EMOJI, DB_PATH
 from bot_instance import bot
 from market_service import sell_resource, get_market_listings, buy_from_market
 from database import update_time
@@ -29,15 +30,23 @@ def sell_cmd(message):
 
 @bot.message_handler(commands=['market'])
 def market_cmd(message):
+    conn = sqlite3.connect(DB_PATH)
     listings = get_market_listings(20)
     if not listings:
+        conn.close()
         bot.reply_to(message, "📭 אין הצעות בשוק כרגע")
         return
     msg = "🏪 **שוק המשאבים:**\n\n"
     for listing in listings:
         listing_id, seller_id, resource, amount, price = listing
         emoji = RESOURCE_EMOJI.get(resource, "")
-        msg += f"#{listing_id} | {emoji} {resource} | {amount:.1f} יח' | {price:.2f} Gild ליח'\n"
+        # קבל שם מוכר
+        c2 = conn.cursor()
+        c2.execute("SELECT display_name, username FROM users WHERE user_id=?", (seller_id,))
+        seller = c2.fetchone()
+        seller_name = seller[0] if seller and seller[0] else (seller[1] if seller else str(seller_id))
+        msg += f"#{listing_id} | {emoji} {resource} | {amount:.1f} יח' | {price:.2f} Gild | {seller_name}\n"
+    conn.close()
     bot.reply_to(message, msg)
 
 @bot.message_handler(commands=['buy'])
