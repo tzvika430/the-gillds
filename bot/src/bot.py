@@ -97,9 +97,11 @@ from attack_handler import *
 from trade_handler import *
 from spy_handler import *
 from announce_handler import *
+from shop_handler import *
 from sell_handler import *
 from spy_handler import *
 from announce_handler import *
+from shop_handler import *
 from sell_handler import *
 from button_handler import *
 from commands import *
