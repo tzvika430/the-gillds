@@ -28,6 +28,8 @@ BUTTON_ACTIONS = {
     "🪖 חייל": ("hire_soldier", None),
     "🎖️ מפקד": ("hire_commander", None),
     "👑 גנרל": ("hire_general", None),
+    "🕵️ מרגל": ("hire_spy", None),
+    "🕵️ בית מרגלים": ("build_spy_house", None),
 }
 
 @bot.message_handler(func=lambda m: m.text in BUTTON_ACTIONS or m.text in ["🏗️ בניה", "👷 עובדים", "📢 קהילה", "⚔️ צבא", "⚔️ מלחמה", "🛒 חנות", "↩️ תפריט ראשי"])
@@ -38,7 +40,7 @@ def handle_all_buttons(message):
     if text == "🏗️ בניה":
         keyboard = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
         keyboard.add("🏠 בית קש", "🧱 בית לבנים")
-        keyboard.add("🪚 מנסרה", "🏰 בסיס צבאי")
+        keyboard.add("🪚 מנסרה", "🏰 בסיס צבאי", "🕵️ בית מרגלים")
         keyboard.add("↩️ תפריט ראשי")
         bot.send_message(message.chat.id, "🏗️ בחר מבנה:", reply_markup=keyboard)
         return
@@ -49,6 +51,7 @@ def handle_all_buttons(message):
         keyboard.add("💧 שואב מים", "⛏️ כורה פחם")
         keyboard.add("🟠 כורה נחושת", "🥇 כורה זהב")
         keyboard.add("🪖 חייל", "🎖️ מפקד", "👑 גנרל")
+        keyboard.add("🕵️ מרגל")
         keyboard.add("↩️ תפריט ראשי")
         bot.send_message(message.chat.id, "👷 בחר עובד:", reply_markup=keyboard)
         return
@@ -57,6 +60,7 @@ def handle_all_buttons(message):
         print("DEBUG: צבא נלחץ!")
         keyboard = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
         keyboard.add("🪖 חייל", "🎖️ מפקד", "👑 גנרל")
+        keyboard.add("🕵️ מרגל")
         keyboard.add("⚔️ מלחמה")
         keyboard.add("↩️ תפריט ראשי")
         bot.send_message(message.chat.id, "⚔️ **צבא**", reply_markup=keyboard)

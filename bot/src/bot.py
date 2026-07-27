@@ -95,8 +95,10 @@ from session_commands import *
 from register_handler import *
 from attack_handler import *
 from trade_handler import *
+from spy_handler import *
 from announce_handler import *
 from sell_handler import *
+from spy_handler import *
 from announce_handler import *
 from sell_handler import *
 from button_handler import *
