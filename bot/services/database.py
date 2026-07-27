@@ -23,6 +23,18 @@ def get_user(user_id, username):
 
 def update_time(user_id, username):
     conn = sqlite3.connect(DB_PATH)
+    # בונוס יומי אוטומטי
+    try:
+        from economy_service import auto_daily_bonus
+        msg = auto_daily_bonus(user_id)
+        if msg:
+            try:
+                from bot_instance import bot
+                bot.send_message(user_id, msg)
+            except:
+                pass
+    except:
+        pass
     c = conn.cursor()
     user = get_user(user_id, username)
     if user[5] and user[8]:

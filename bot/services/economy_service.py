@@ -43,3 +43,55 @@ def consume_daily_resources():
             c.execute("UPDATE resources SET gold=MAX(0, COALESCE(gold,0)-?) WHERE user_id=?", (total_gold, user_id))
     conn.commit()
     conn.close()
+
+def daily_bonus(user_id):
+    """בונוס יומי — 1 Gild"""
+    import sqlite3
+    from config import DB_PATH
+    from datetime import datetime
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    # בדוק מתי היה בונוס אחרון
+    c.execute("SELECT last_bonus FROM users WHERE user_id=?", (user_id,))
+    row = c.fetchone()
+    now = datetime.now()
+    if row and row[0]:
+        try:
+            last = datetime.fromisoformat(row[0])
+            if (now - last).days < 1:
+                conn.close()
+                return False, "כבר קיבלת בונוס היום. חזור מחר!"
+        except:
+            pass
+    # תן בונוס
+    c.execute("UPDATE resources SET gild=gild+1 WHERE user_id=?", (user_id,))
+    c.execute("UPDATE users SET last_bonus=? WHERE user_id=?", (now.isoformat(), user_id))
+    conn.commit()
+    conn.close()
+    return True, "🎁 קיבלת 1 Gild בונוס יומי! חזור מחר לעוד."
+
+
+def auto_daily_bonus(user_id):
+    """בדיקת בונוס יומי אוטומטית — מחזירה הודעה אם הגיע בונוס, אחרת None"""
+    import sqlite3
+    from config import DB_PATH
+    from datetime import datetime
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    c.execute("SELECT last_bonus FROM users WHERE user_id=?", (user_id,))
+    row = c.fetchone()
+    now = datetime.now()
+    if row and row[0]:
+        try:
+            last = datetime.fromisoformat(row[0])
+            if (now - last).days < 1:
+                conn.close()
+                return None  # כבר קיבל היום
+        except:
+            pass
+    # תן בונוס
+    c.execute("UPDATE resources SET gild=gild+1 WHERE user_id=?", (user_id,))
+    c.execute("UPDATE users SET last_bonus=? WHERE user_id=?", (now.isoformat(), user_id))
+    conn.commit()
+    conn.close()
+    return "🎁 קיבלת 1 Gild בונוס יומי! חזור מחר לעוד."
