@@ -124,7 +124,7 @@ def sellstore_cmd(message):
         bot.reply_to(message, 'משאב לא מוכר')
         return
     idx = ALL_RESOURCE_IDX[resource]
-    if idx >= len(row) or row[idx] < amount:
+    if idx >= len(row) or round(row[idx], 1) < amount:
         bot.reply_to(message, f'אין מספיק {resource}')
         return
     
