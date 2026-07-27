@@ -33,7 +33,7 @@ SOLDIER_RISK_REDUCTION = {"soldier": 0.01, "commander": 0.02, "general": 0.04}
 
 DEFAULT_BUILDING_CAPACITY = 4
 
-NPC_BUY_RATE = 200
+NPC_BUY_RATE = 500
 
 SOLDIER_REQUIREMENTS = {'commander': ('soldier', 6), 'general': ('commander', 3)}
 
