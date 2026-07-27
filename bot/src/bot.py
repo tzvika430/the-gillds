@@ -54,6 +54,16 @@ def background_ticker():
                 bot.send_message(pid, msg)
         except Exception as e:
             print(f"⚠️ שגיאה באירוע טורף: {e}")
+        # בונוס פסיבי יומי — 0.1 Gild
+        try:
+            import sqlite3
+            conn = sqlite3.connect(DB_PATH)
+            c = conn.cursor()
+            c.execute("UPDATE resources SET gild=gild+0.1")
+            conn.commit()
+            conn.close()
+        except:
+            pass
         # צריכה יומית
         try:
             from economy_service import consume_daily_resources
@@ -85,6 +95,8 @@ from session_commands import *
 from register_handler import *
 from attack_handler import *
 from trade_handler import *
+from sell_handler import *
+from sell_handler import *
 from button_handler import *
 from commands import *
 
