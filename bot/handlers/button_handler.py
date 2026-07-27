@@ -30,7 +30,7 @@ BUTTON_ACTIONS = {
     "👑 גנרל": ("hire_general", None),
 }
 
-@bot.message_handler(func=lambda m: m.text in BUTTON_ACTIONS or m.text in ["🏗️ בניה", "👷 עובדים", "📢 קהילה", "🛒 חנות", "↩️ תפריט ראשי"])
+@bot.message_handler(func=lambda m: m.text in BUTTON_ACTIONS or m.text in ["🏗️ בניה", "👷 עובדים", "📢 קהילה", "⚔️ צבא", "⚔️ מלחמה", "🛒 חנות", "↩️ תפריט ראשי"])
 def handle_all_buttons(message):
     text = message.text
     
@@ -51,6 +51,22 @@ def handle_all_buttons(message):
         keyboard.add("🪖 חייל", "🎖️ מפקד", "👑 גנרל")
         keyboard.add("↩️ תפריט ראשי")
         bot.send_message(message.chat.id, "👷 בחר עובד:", reply_markup=keyboard)
+        return
+    
+    if text == "⚔️ צבא":
+        print("DEBUG: צבא נלחץ!")
+        keyboard = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
+        keyboard.add("🪖 חייל", "🎖️ מפקד", "👑 גנרל")
+        keyboard.add("⚔️ מלחמה")
+        keyboard.add("↩️ תפריט ראשי")
+        bot.send_message(message.chat.id, "⚔️ **צבא**", reply_markup=keyboard)
+        return
+    
+    if text == "⚔️ מלחמה":
+        keyboard = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
+        keyboard.add("⚔️ כן, צא לקרב!", "🕊️ לא, שלום")
+        keyboard.add("↩️ תפריט ראשי")
+        bot.send_message(message.chat.id, "⚔️ **צא לקרב?**\n\nמנצח לוקח 10% מהמשאבים + 1 Gild\nמפסיד מאבד חיילים.", reply_markup=keyboard)
         return
     
     if text == "🛒 חנות":
@@ -113,8 +129,9 @@ def handle_all_buttons(message):
 
 def show_main_menu(chat_id):
     keyboard = types.ReplyKeyboardMarkup(row_width=3, resize_keyboard=True)
-    keyboard.add("👤 פרופיל", "📚 מדריך", "⚔️ קרב")
+    keyboard.add("👤 פרופיל", "📚 מדריך", "⚔️ צבא")
     keyboard.add("🏪 שוק", "🏆 מובילים", "💳 תשלום")
     keyboard.add("🏗️ בניה", "👷 עובדים", "🛒 חנות")
-    keyboard.add("📝 הרשמה", "📢 קהילה", "📋 תפריט")
+    keyboard.add("📝 הרשמה", "⚔️ צבא", "📢 קהילה")
+    keyboard.add("📋 תפריט")
     bot.send_message(chat_id, "📋 תפריט ראשי:", reply_markup=keyboard)

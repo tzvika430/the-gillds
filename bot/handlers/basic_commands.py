@@ -117,7 +117,7 @@ def leaderboard(message):
 def get_main_keyboard():
     from telebot import types
     keyboard = types.ReplyKeyboardMarkup(row_width=3, resize_keyboard=True)
-    keyboard.add("👤 פרופיל", "📚 מדריך", "⚔️ קרב")
+    keyboard.add("👤 פרופיל", "📚 מדריך", "⚔️ צבא")
     keyboard.add("🏪 שוק", "🏆 מובילים", "💳 תשלום")
     keyboard.add("🏗️ בניה", "👷 עובדים", "🛒 חנות")
     return keyboard
@@ -204,7 +204,7 @@ def confirm_delete(message):
     conn.close()
     
     keyboard = types.ReplyKeyboardMarkup(row_width=3, resize_keyboard=True)
-    keyboard.add("👤 פרופיל", "📚 מדריך", "⚔️ קרב")
+    keyboard.add("👤 פרופיל", "📚 מדריך", "⚔️ צבא")
     keyboard.add("🏪 שוק", "🏆 מובילים", "💳 תשלום")
     keyboard.add("🏗️ בניה", "👷 עובדים", "🛒 חנות")
     
@@ -213,7 +213,7 @@ def confirm_delete(message):
 @bot.message_handler(func=lambda m: m.text == '❌ לא, בטל')
 def cancel_delete(message):
     keyboard = types.ReplyKeyboardMarkup(row_width=3, resize_keyboard=True)
-    keyboard.add("👤 פרופיל", "📚 מדריך", "⚔️ קרב")
+    keyboard.add("👤 פרופיל", "📚 מדריך", "⚔️ צבא")
     keyboard.add("🏪 שוק", "🏆 מובילים", "💳 תשלום")
     keyboard.add("🏗️ בניה", "👷 עובדים", "🛒 חנות")
     
