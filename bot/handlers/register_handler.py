@@ -116,6 +116,11 @@ def register_confirm(message):
     # שמור ב-DB
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
+    # וודא שיש resources
+    c.execute("INSERT OR IGNORE INTO resources (user_id) VALUES (?)", (user_id,))
+    c.execute("INSERT OR IGNORE INTO workers (user_id, worker_type, count) VALUES (?, 'farmer', 1)", (user_id,))
+    c.execute("INSERT OR IGNORE INTO workers (user_id, worker_type, count) VALUES (?, 'lumberjack', 1)", (user_id,))
+    c.execute("INSERT OR IGNORE INTO buildings (user_id, building_type, count) VALUES (?, 'straw_house', 1)", (user_id,))
     c.execute("""UPDATE users SET display_name=?, kingdom=? WHERE user_id=?""", 
               (name, kingdom, user_id))
     conn.commit()
