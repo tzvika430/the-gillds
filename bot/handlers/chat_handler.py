@@ -48,7 +48,7 @@ def shout_cmd(message):
                 keyboard.add("👤 פרופיל", "📚 מדריך", "⚔️ צבא")
                 keyboard.add("🏪 שוק", "🏆 מובילים", "💳 תשלום")
                 keyboard.add("↩️ תפריט ראשי")
-                bot.send_message(uid, f"📢 **{display_name}:** {text}", reply_markup=keyboard)
+                bot.send_message(uid, f"📢 **{display_name}:** {text}\n\n📋 /menu — חזרה לתפריט", reply_markup=keyboard)
                 sent += 1
             except:
                 pass
@@ -58,7 +58,7 @@ def shout_cmd(message):
     keyboard.add("🏪 שוק", "🏆 מובילים", "💳 תשלום")
     keyboard.add("🏗️ בניה", "👷 עובדים", "🛒 חנות")
     keyboard.add("📝 הרשמה", "📢 קהילה", "📋 תפריט")
-    bot.reply_to(message, f"📢 ההודעה נשלחה ל-{sent} שחקנים!", reply_markup=keyboard)
+    bot.reply_to(message, f"📢 ההודעה נשלחה ל-{sent} שחקנים!\n\n📋 /menu — חזרה לתפריט", reply_markup=keyboard)
 
 @bot.message_handler(commands=['board'])
 def board_cmd(message):

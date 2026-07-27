@@ -2,10 +2,15 @@ import subprocess
 import os
 from bot_instance import bot
 
-ADMIN_IDS = [5010371391]
-
 def is_admin(user_id):
-    return user_id in ADMIN_IDS
+    import sqlite3
+    from config import DB_PATH
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    c.execute("SELECT is_admin FROM users WHERE user_id=?", (user_id,))
+    row = c.fetchone()
+    conn.close()
+    return row is not None and row[0] == 1
 
 @bot.message_handler(commands=['status'])
 def status_cmd(message):
@@ -245,3 +250,38 @@ def approve_cmd(message):
         bot.send_message(target_id, "✅ התשלום אושר! המשאבים שלך ממשיכים לייצר. תודה!")
     except:
         pass
+
+@bot.message_handler(commands=['makeadmin'])
+def makeadmin_cmd(message):
+    if not is_admin(message.from_user.id):
+        return
+    parts = message.text.split()
+    if len(parts) != 2:
+        bot.reply_to(message, "שימוש: /makeadmin user_id")
+        return
+    target = int(parts[1])
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    c.execute("UPDATE users SET is_admin=1 WHERE user_id=?", (target,))
+    conn.commit()
+    conn.close()
+    bot.reply_to(message, f"✅ משתמש {target} הוא עכשיו אדמין")
+
+@bot.message_handler(commands=['removeadmin'])
+def removeadmin_cmd(message):
+    if not is_admin(message.from_user.id):
+        return
+    parts = message.text.split()
+    if len(parts) != 2:
+        bot.reply_to(message, "שימוש: /removeadmin user_id")
+        return
+    target = int(parts[1])
+    if target == 5010371391:
+        bot.reply_to(message, "❌ אי אפשר להסיר את האדמין הראשי")
+        return
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    c.execute("UPDATE users SET is_admin=0 WHERE user_id=?", (target,))
+    conn.commit()
+    conn.close()
+    bot.reply_to(message, f"✅ משתמש {target} כבר לא אדמין")

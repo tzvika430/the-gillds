@@ -385,3 +385,8 @@ def check_subscription(user_id):
         return True, 0, "⚠️ היום האחרון בחינם!"
     else:
         return False, days_left, "🔒 תקופת הניסיון הסתיימה. /pay להמשך."
+
+
+def add_menu_footer(msg):
+    """הוסף הערת menu להודעה"""
+    return msg + "\n\n📋 /menu — חזרה לתפריט"
