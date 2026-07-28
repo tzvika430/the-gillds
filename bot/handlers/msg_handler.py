@@ -61,3 +61,39 @@ def group_cmd(message):
 /board — לוח מודעות
 /msg [שם] [הודעה] — הודעה פרטית"""
     bot.reply_to(message, msg)
+
+@bot.message_handler(commands=['chat'])
+def chat_cmd(message):
+    """פתח רשימת שחקנים לשיחה פרטית"""
+    from telebot import types
+    import sqlite3
+    from config import DB_PATH
+    
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    c.execute("SELECT user_id, display_name, username FROM users WHERE user_id != ?", (message.from_user.id,))
+    users = c.fetchall()
+    conn.close()
+    
+    if not users:
+        bot.reply_to(message, "אין שחקנים אחרים עדיין")
+        return
+    
+    keyboard = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
+    for uid, dname, uname in users:
+        name = dname or uname or str(uid)
+        keyboard.add(types.KeyboardButton(f"💬 {name}"))
+    keyboard.add("↩️ תפריט ראשי")
+    
+    bot.send_message(message.chat.id, "💬 **שיחה פרטית**\n\nבחר שחקן:", reply_markup=keyboard)
+
+@bot.message_handler(func=lambda m: m.text and m.text.startswith("💬 "))
+def handle_chat_click(message):
+    target_name = message.text[2:].strip()  # הסר "💬 "
+    
+    if target_name == "תפריט ראשי":
+        return
+    
+    # שמור את שם היעד ושלח הודעה
+    message.text = f"/msg {target_name} "
+    bot.reply_to(message, f"💬 התחלת שיחה עם {target_name}.\nהקלד את ההודעה עכשיו:\n(השתמש שוב בפקודה: /msg {target_name} [הודעה])")

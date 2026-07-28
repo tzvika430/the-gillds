@@ -2,7 +2,6 @@ from config import *
 from database import update_time, get_resources, buy_from_system
 from building_service import build_building, hire_worker
 from bot_instance import bot
-from basic_commands import get_main_keyboard
 import sqlite3
 
 @bot.message_handler(commands=['resources'])
@@ -45,8 +44,9 @@ def resources_cmd(message):
 
 🏠 מבנים:
 {bstr}"""
-    keyboard = get_main_keyboard()
-    bot.reply_to(message, msg, reply_markup=keyboard)
+    from button_handler import show_main_menu
+    bot.reply_to(message, msg)
+    show_main_menu(message.chat.id)
 
 @bot.message_handler(commands=['build'])
 def build_cmd(message):

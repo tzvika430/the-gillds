@@ -87,8 +87,8 @@ def profile_cmd(message):
 
 @bot.message_handler(commands=['menu'])
 def menu_cmd(message):
-    keyboard = get_main_keyboard()
-    bot.send_message(message.chat.id, "📋 תפריט ראשי:", reply_markup=keyboard)
+    from menu import show_main_menu
+    show_main_menu(message.chat.id)
 
 @bot.message_handler(commands=['balance'])
 def balance(message):
@@ -115,6 +115,12 @@ def leaderboard(message):
 # ============ מקלדת פקודות ============
 
 def get_main_keyboard():
+    from telebot import types
+    keyboard = types.ReplyKeyboardMarkup(row_width=3, resize_keyboard=True)
+    keyboard.add("👤 פרופיל", "📚 מדריך", "⚔️ צבא")
+    keyboard.add("💰 כלכלה", "🏗️ בניה", "👥 קהילה")
+    keyboard.add("💬 שיחה", "📋 /menu")
+    return keyboard
     from telebot import types
     keyboard = types.ReplyKeyboardMarkup(row_width=3, resize_keyboard=True)
     keyboard.add("👤 פרופיל", "📚 מדריך", "⚔️ צבא")

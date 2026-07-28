@@ -7,6 +7,7 @@ import threading
 import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'services'))
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'handlers'))
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'handlers'))
 from config import *
 from database import *
 from economy_service import produce_by_workers
@@ -88,7 +89,9 @@ def background_ticker():
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'handlers'))
 from market_commands import *
 from admin_commands import *
+from menu import show_main_menu
 from basic_commands import *
+from msg_handler import *
 from chat_handler import *
 from resource_commands import *
 from session_commands import *
