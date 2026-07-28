@@ -8,14 +8,6 @@ from config import RESOURCE_EMOJI, ALL_RESOURCE_IDX
 sell_state = {}
 buy_state = {}
 
-def get_main_keyboard():
-    keyboard = types.ReplyKeyboardMarkup(row_width=3, resize_keyboard=True)
-    keyboard.add("📦 /resources", "👤 /profile", "📚 /doc")
-    keyboard.add("🏪 /market", "🏆 /leaderboard", "⏰ /time")
-    keyboard.add("🏗️ /build", "👷 /hire", "🛒 /store")
-    return keyboard
-
-# ============ תפריט שוק ============
 
 @bot.message_handler(func=lambda m: m.text == '🏪 /market')
 def trade_menu(message):

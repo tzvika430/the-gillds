@@ -124,8 +124,6 @@ def get_main_keyboard():
     from telebot import types
     keyboard = types.ReplyKeyboardMarkup(row_width=3, resize_keyboard=True)
     keyboard.add("👤 פרופיל", "📚 מדריך", "⚔️ צבא")
-    keyboard.add("🏪 שוק", "🏆 מובילים", "💳 תשלום")
-    keyboard.add("🏗️ בניה", "👷 עובדים", "🛒 חנות")
     return keyboard
 
 def send_with_menu(chat_id, text):
@@ -211,8 +209,6 @@ def confirm_delete(message):
     
     keyboard = types.ReplyKeyboardMarkup(row_width=3, resize_keyboard=True)
     keyboard.add("👤 פרופיל", "📚 מדריך", "⚔️ צבא")
-    keyboard.add("🏪 שוק", "🏆 מובילים", "💳 תשלום")
-    keyboard.add("🏗️ בניה", "👷 עובדים", "🛒 חנות")
     
     bot.send_message(user_id, "🗑️ הפרופיל נמחק.\nשלח /register ליצור פרופיל חדש, או /start להתחלה.", reply_markup=keyboard)
 
@@ -220,7 +216,5 @@ def confirm_delete(message):
 def cancel_delete(message):
     keyboard = types.ReplyKeyboardMarkup(row_width=3, resize_keyboard=True)
     keyboard.add("👤 פרופיל", "📚 מדריך", "⚔️ צבא")
-    keyboard.add("🏪 שוק", "🏆 מובילים", "💳 תשלום")
-    keyboard.add("🏗️ בניה", "👷 עובדים", "🛒 חנות")
     
     bot.send_message(message.from_user.id, "✅ המחיקה בוטלה.", reply_markup=keyboard)
