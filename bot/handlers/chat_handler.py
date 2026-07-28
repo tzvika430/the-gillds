@@ -48,6 +48,8 @@ def shout_cmd(message):
                 keyboard.add("👤 פרופיל", "📚 מדריך", "⚔️ צבא")
                 keyboard.add("🏪 שוק", "🏆 מובילים", "💳 תשלום")
                 keyboard.add("↩️ תפריט ראשי")
+                keyboard = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
+                keyboard.add("💬 תגובה", "↩️ תפריט ראשי")
                 bot.send_message(uid, f"📢 **{display_name}:** {text}\n\n📋 /menu — חזרה לתפריט", reply_markup=keyboard)
                 sent += 1
             except:

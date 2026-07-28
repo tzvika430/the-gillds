@@ -1,141 +1,106 @@
 from telebot import types
 from bot_instance import bot
 
-# ============ מיפוי כפתורים ============
-BUTTON_ACTIONS = {
-    # ראשיים
-    "👤 פרופיל": ("profile_cmd", "basic_commands"),
-    "📚 מדריך": ("doc_cmd", "admin_commands"),
-    "⚔️ קרב": ("attack_cmd", "attack_handler"),
-    "🏪 שוק": ("trade_menu", "trade_handler"),
-    "🏆 מובילים": ("leaderboard", "basic_commands"),
-    "💳 תשלום": ("pay_cmd", "admin_commands"),
-    "📝 הרשמה": ("start_register", "register_handler"),
-    "📢 קהילה": (None, None),  # מטופל בנפרד
-    "📋 תפריט": ("show_main_menu", None),
-    # בנייה
-    "🏠 בית קש": ("build_straw_house", None),
-    "🧱 בית לבנים": ("build_brick_house", None),
-    "🪚 מנסרה": ("build_sawmill", None),
-    "🏰 בסיס צבאי": ("build_barracks", None),
-    # עובדים
-    "👨‍🌾 חקלאי": ("hire_farmer", None),
-    "🪓 חוטב עצים": ("hire_lumberjack", None),
-    "💧 שואב מים": ("hire_water_drawer", None),
-    "⛏️ כורה פחם": ("hire_coal_miner", None),
-    "🟠 כורה נחושת": ("hire_copper_miner", None),
-    "🥇 כורה זהב": ("hire_gold_miner", None),
-    "🪖 חייל": ("hire_soldier", None),
-    "🎖️ מפקד": ("hire_commander", None),
-    "👑 גנרל": ("hire_general", None),
-    "🕵️ מרגל": ("hire_spy", None),
-    "🕵️ בית מרגלים": ("build_spy_house", None),
-}
-
-@bot.message_handler(func=lambda m: m.text in BUTTON_ACTIONS or m.text in ["🏗️ בניה", "👷 עובדים", "📢 קהילה", "⚔️ צבא", "⚔️ מלחמה", "🛒 חנות", "↩️ תפריט ראשי"])
+@bot.message_handler(func=lambda m: m.text in ["💰 כלכלה", "⚔️ צבא", "🏗️ בניה", "👥 קהילה", "💬 שיחה", "📋 תפריט", "↩️ תפריט ראשי", "🎯 גיוס", "🕵️ מודיעין", "⚔️ מלחמה", "🏪 שוק", "🛒 חנות", "🏆 מובילים", "💳 תשלום"])
 def handle_all_buttons(message):
     text = message.text
     
-    # תפריטי משנה
-    if text == "🏗️ בניה":
-        keyboard = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
-        keyboard.add("🏠 בית קש", "🧱 בית לבנים")
-        keyboard.add("🪚 מנסרה", "🏰 בסיס צבאי", "🕵️ בית מרגלים")
-        keyboard.add("↩️ תפריט ראשי")
-        bot.send_message(message.chat.id, "🏗️ בחר מבנה:", reply_markup=keyboard)
-        return
-    
-    if text == "👷 עובדים":
-        keyboard = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
-        keyboard.add("👨‍🌾 חקלאי", "🪓 חוטב עצים")
-        keyboard.add("💧 שואב מים", "⛏️ כורה פחם")
-        keyboard.add("🟠 כורה נחושת", "🥇 כורה זהב")
-        keyboard.add("🪖 חייל", "🎖️ מפקד", "👑 גנרל")
-        keyboard.add("🕵️ מרגל")
-        keyboard.add("↩️ תפריט ראשי")
-        bot.send_message(message.chat.id, "👷 בחר עובד:", reply_markup=keyboard)
-        return
-    
-    if text == "⚔️ צבא":
-        print("DEBUG: צבא נלחץ!")
-        keyboard = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
-        keyboard.add("🪖 חייל", "🎖️ מפקד", "👑 גנרל")
-        keyboard.add("🕵️ מרגל")
-        keyboard.add("⚔️ מלחמה")
-        keyboard.add("↩️ תפריט ראשי")
-        bot.send_message(message.chat.id, "⚔️ **צבא**", reply_markup=keyboard)
-        return
-    
-    if text == "⚔️ מלחמה":
-        keyboard = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
-        keyboard.add("⚔️ כן, צא לקרב!", "🕊️ לא, שלום")
-        keyboard.add("↩️ תפריט ראשי")
-        bot.send_message(message.chat.id, "⚔️ **צא לקרב?**\n\nמנצח לוקח 10% מהמשאבים + 1 Gild\nמפסיד מאבד חיילים.", reply_markup=keyboard)
-        return
-    
-    if text == "🛒 חנות":
-        print("DEBUG: חנות נלחץ!")
-        keyboard = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
-        keyboard.add("🛒 קנה מהמערכת", "💰 מכור למערכת")
-        keyboard.add("↩️ תפריט ראשי")
-        bot.send_message(message.chat.id, "🛒 **חנות המערכת**\n\nקנייה: 200 יח׳ = 1 Gild\nמכירה: 100 יח׳ = 1 Gild", reply_markup=keyboard)
-        return
-    
-    if text == "🛒 קנה מהמערכת":
-        bot.send_message(message.chat.id, "🛒 **קנייה מהמערכת**\n\nשימוש: /store [משאב] [כמות]\nלדוגמה: /store wood 200\n\nשער: 200 יחידות = 1 Gild")
-        return
-    
-    if text == "💰 מכור למערכת":
-        bot.send_message(message.chat.id, "💰 **מכירה למערכת**\n\nשימוש: /sellstore [משאב] [כמות]\nלדוגמה: /sellstore wheat 200\n\nשער: 100 יחידות = 1 Gild")
-        return
-    
-    if text == "📢 קהילה":
-        keyboard = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
-        keyboard.add("📢 /shout", "📋 /board")
-        keyboard.add("🏆 /leaderboard")
-        keyboard.add("↩️ תפריט ראשי")
-        bot.send_message(message.chat.id, "📢 קהילה", reply_markup=keyboard)
-        return
-    
-    if text == "↩️ תפריט ראשי":
+    if text == "📋 תפריט" or text == "↩️ תפריט ראשי":
         show_main_menu(message.chat.id)
         return
     
-    # כפתורי פעולה
-    if text in BUTTON_ACTIONS:
-        action, module = BUTTON_ACTIONS[text]
-        
-        if action == "show_main_menu":
-            show_main_menu(message.chat.id)
-            return
-        
-        # בנייה
-        if action.startswith("build_"):
-            building = action.replace("build_", "")
-            message.text = f"/build {building}"
-            from resource_commands import build_cmd
-            build_cmd(message)
-            return
-        
-        # עובדים
-        if action.startswith("hire_"):
-            worker = action.replace("hire_", "")
-            message.text = f"/hire {worker}"
-            from resource_commands import hire_cmd
-            hire_cmd(message)
-            return
-        
-        # פקודות רגילות
-        if module:
-            mod = __import__(module, fromlist=[action])
-            func = getattr(mod, action)
-            func(message)
+    if text == "💰 כלכלה":
+        bot.send_message(message.chat.id, "💰 **כלכלה**\n\n🏪 שוק — קנה/מכור לשחקנים\n🛒 חנות — קנה/מכור למערכת\n🏆 מובילים — טבלת דירוג\n💳 תשלום — המשך משחק", reply_markup=get_economy_menu())
+        return
+    
+    if text == "⚔️ צבא":
+        bot.send_message(message.chat.id, "⚔️ **צבא**\n\n🎯 גיוס — גייס חיילים\n🕵️ מודיעין — שלח מרגלים\n⚔️ מלחמה — תקוף שחקנים", reply_markup=get_army_menu())
+        return
+    
+    if text == "🏗️ בניה":
+        bot.send_message(message.chat.id, "🏗️ **בניה**\n\n🏠 צריף קש — בסיסי\n🧱 בית לבנים — מתקדם\n🪚 מנסרה — עוד עץ\n🏰 בסיס צבאי — גייס חיילים\n🕵️ בית מרגלים — שלח מרגלים", reply_markup=get_build_menu())
+        return
+    
+    if text == "👥 קהילה":
+        bot.send_message(message.chat.id, "👥 **קהילה**\n\n📢 /shout — שלח לכולם\n📋 /board — לוח מודעות", reply_markup=get_community_menu())
+        return
+    
+    if text == "💬 שיחה":
+        from msg_handler import chat_cmd
+        chat_cmd(message)
+        return
+    
+    # תת-תפריטים
+    if text == "🎯 גיוס":
+        keyboard = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
+        keyboard.add("🪖 חייל", "🎖️ מפ�кад", "👑 גנרל")
+        keyboard.add("↩️ תפריט ראשי")
+        bot.send_message(message.chat.id, "🎯 **גיוס חיילים**", reply_markup=keyboard)
+        return
+    
+    if text == "🕵️ מודיעין":
+        from spy_handler import spy_cmd
+        spy_cmd(message)
+        return
+    
+    if text == "⚔️ מלחמה":
+        from attack_handler import attack_cmd
+        attack_cmd(message)
+        return
+    
+    if text == "🏪 שוק":
+        from trade_handler import trade_menu
+        trade_menu(message)
+        return
+    
+    if text == "🛒 חנות":
+        keyboard = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
+        keyboard.add("🛒 קנה", "💰 מכור")
+        keyboard.add("↩️ תפריט ראשי")
+        bot.send_message(message.chat.id, "🛒 **חנות**\n\nקנייה: 500 יח׳ = 1 Gild\nמכירה: 250 יח׳ = 1 Gild", reply_markup=keyboard)
+        return
+    
+    if text == "🏆 מובילים":
+        from basic_commands import leaderboard
+        leaderboard(message)
+        return
+    
+    if text == "💳 תשלום":
+        from admin_commands import pay_cmd
+        pay_cmd(message)
+        return
 
 def show_main_menu(chat_id):
     keyboard = types.ReplyKeyboardMarkup(row_width=3, resize_keyboard=True)
     keyboard.add("👤 פרופיל", "📚 מדריך", "⚔️ צבא")
-    keyboard.add("🏪 שוק", "🏆 מובילים", "💳 תשלום")
-    keyboard.add("🏗️ בניה", "👷 עובדים", "🛒 חנות")
-    keyboard.add("📝 הרשמה", "⚔️ צבא", "📢 קהילה")
-    keyboard.add("📋 תפריט")
+    keyboard.add("💰 כלכלה", "🏗️ בניה", "👥 קהילה")
+    keyboard.add("💬 שיחה", "📋 תפריט")
     bot.send_message(chat_id, "📋 תפריט ראשי:", reply_markup=keyboard)
+
+def get_economy_menu():
+    keyboard = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
+    keyboard.add("🏪 שוק", "🛒 חנות")
+    keyboard.add("🏆 מובילים", "💳 תשלום")
+    keyboard.add("↩️ תפריט ראשי")
+    return keyboard
+
+def get_army_menu():
+    keyboard = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
+    keyboard.add("🎯 גיוס", "🕵️ מודיעין")
+    keyboard.add("⚔️ מלחמה")
+    keyboard.add("↩️ תפריט ראשי")
+    return keyboard
+
+def get_build_menu():
+    keyboard = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
+    keyboard.add("🏠 צריף קש", "🧱 בית לבנים")
+    keyboard.add("🪚 מנסרה", "🏰 בסיס צבאי")
+    keyboard.add("🕵️ בית מרגלים")
+    keyboard.add("↩️ תפריט ראשי")
+    return keyboard
+
+def get_community_menu():
+    keyboard = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
+    keyboard.add("📢 /shout", "📋 /board")
+    keyboard.add("↩️ תפריט ראשי")
+    return keyboard

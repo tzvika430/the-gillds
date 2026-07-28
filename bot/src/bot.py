@@ -92,6 +92,7 @@ from admin_commands import *
 from menu import show_main_menu
 from basic_commands import *
 from msg_handler import *
+from reply_handler import *
 from chat_handler import *
 from resource_commands import *
 from session_commands import *
