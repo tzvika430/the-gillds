@@ -37,7 +37,7 @@ DEFAULT_BUILDING_CAPACITY = 4
 
 NPC_BUY_RATE = 500
 
-SOLDIER_REQUIREMENTS = {'commander': ('soldier', 6), 'general': ('commander', 3)}
+SOLDIER_REQUIREMENTS = {'commander': ('soldier', 6), 'general': ('commander', 3), 'spy': None}
 
 DAILY_CONSUMPTION = {
     "water": {

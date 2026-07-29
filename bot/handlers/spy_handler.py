@@ -1,3 +1,4 @@
+import sqlite3
 import random
 from bot_instance import bot
 from config import DB_PATH
@@ -60,6 +61,11 @@ def spy_cmd(message):
     buildings = c.fetchall()
     
     conn.commit()
+    
+    # קבל שם של המרגל
+    c.execute("SELECT display_name FROM users WHERE user_id=?", (user_id,))
+    row = c.fetchone()
+    sender_name = row[0] if row and row[0] else (message.from_user.username or str(user_id))
     conn.close()
     
     accuracy = min(100, spies * 10)
@@ -102,4 +108,10 @@ def spy_cmd(message):
             msg += f"{emoji} {bt}: {cnt}\n"
     
     msg += f"\n🕵️ מרגל נשלח. נותרו {spies-1}."
+    # התראה לשחקן שריגלו אחריו — השם הנכון של המרגל
+    try:
+        bot.send_message(target_id, f"🕵️ **{sender_name}** ריגל אחריך!\nהגבר אבטחה — גייס חיילים או מרגלים.")
+    except:
+        pass
+    
     bot.reply_to(message, msg)

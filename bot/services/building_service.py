@@ -36,7 +36,7 @@ def hire_worker(user_id, worker_type):
         conn.close()
         return False, f'אין מספיק Gild, צריך {cost}, יש {gild}'
     # בדיקת היררכיית חיילים
-    if worker_type in SOLDIER_REQUIREMENTS:
+    if worker_type in SOLDIER_REQUIREMENTS and SOLDIER_REQUIREMENTS.get(worker_type):
         req_type, req_count = SOLDIER_REQUIREMENTS[worker_type]
         c.execute("SELECT COALESCE(SUM(count),0) FROM workers WHERE user_id=? AND worker_type=?", (user_id, req_type))
         current = c.fetchone()[0]
