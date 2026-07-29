@@ -120,12 +120,9 @@ def leaderboard(message):
 # ============ מקלדת פקודות ============
 
 def get_main_keyboard():
-    from telebot import types
-    keyboard = types.ReplyKeyboardMarkup(row_width=3, resize_keyboard=True)
-    keyboard.add("👤 פרופיל", "📚 מדריך", "⚔️ צבא")
-    keyboard.add("💰 כלכלה", "🏗️ בניה", "👥 קהילה")
-    keyboard.add("💬 שיחה", "📋 /menu")
-    return keyboard
+    from menu import show_main_menu
+    # מחזיר None — השתמש ב-show_main_menu(chat_id) ישירות
+    return None
     from telebot import types
     keyboard = types.ReplyKeyboardMarkup(row_width=3, resize_keyboard=True)
     keyboard.add("👤 פרופיל", "📚 מדריך", "⚔️ צבא")
