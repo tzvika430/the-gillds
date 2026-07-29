@@ -48,6 +48,12 @@ def msg_cmd(message):
     except:
         bot.reply_to(message, "❌ לא ניתן לשלוח הודעה (המשתמש חסם את הבוט)")
 
+@bot.message_handler(func=lambda m: m.text and m.text.startswith("💬 "))
+def handle_chat_click(message):
+    target_name = message.text[2:].strip()
+    if target_name and target_name != "תפריט ראשי":
+        bot.send_message(message.chat.id, f"💬 שיחה עם **{target_name}**\n\nשלח: /msg {target_name} [הודעה]")
+
 @bot.message_handler(commands=['group'])
 def group_cmd(message):
     """קישור לקבוצת השחקנים"""
