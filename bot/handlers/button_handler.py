@@ -30,10 +30,7 @@ def btn_workers(message):
 def btn_community(message):
     show_community_menu(message.chat.id)
 
-@bot.message_handler(func=lambda m: m.text == "💬 שיחה")
-def btn_chat(message):
-    from msg_handler import chat_cmd
-    chat_cmd(message)
+
 
 @bot.message_handler(func=lambda m: m.text == "🕵️ מודיעין")
 def btn_spy(message):
