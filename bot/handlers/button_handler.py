@@ -1,7 +1,7 @@
 from telebot import types
 from bot_instance import bot
 
-@bot.message_handler(func=lambda m: m.text in ["💰 כלכלה", "⚔️ צבא", "🏗️ בניה", "👥 קהילה", "💬 שיחה", "📋 תפריט", "↩️ תפריט ראשי", "🎯 גיוס", "🕵️ מודיעין", "⚔️ מלחמה", "🏪 שוק", "🛒 חנות", "🏆 מובילים", "💳 תשלום"])
+@bot.message_handler(func=lambda m: m.text in ["💰 כלכלה", "⚔️ צבא", "🏗️ בניה", "👥 קהילה", "👤 פרופיל", "📚 מדריך", "💬 שיחה", "📋 תפריט", "↩️ תפריט ראשי", "🎯 גיוס", "🕵️ מודיעין", "⚔️ מלחמה", "🏪 שוק", "🛒 חנות", "🏆 מובילים", "💳 תשלום"])
 def handle_all_buttons(message):
     text = message.text
     
@@ -23,6 +23,16 @@ def handle_all_buttons(message):
     
     if text == "👥 קהילה":
         bot.send_message(message.chat.id, "👥 **קהילה**\n\n📢 /shout — שלח לכולם\n📋 /board — לוח מודעות", reply_markup=get_community_menu())
+        return
+    
+    if text == "👤 פרופיל":
+        from basic_commands import profile_cmd
+        profile_cmd(message)
+        return
+    
+    if text == "📚 מדריך":
+        from admin_commands import doc_cmd
+        doc_cmd(message)
         return
     
     if text == "💬 שיחה":
@@ -74,7 +84,7 @@ def show_main_menu(chat_id):
     keyboard = types.ReplyKeyboardMarkup(row_width=3, resize_keyboard=True)
     keyboard.add("👤 פרופיל", "📚 מדריך", "⚔️ צבא")
     keyboard.add("💰 כלכלה", "🏗️ בניה", "👥 קהילה")
-    keyboard.add("💬 שיחה", "📋 תפריט")
+    keyboard.add("👤 פרופיל", "📚 מדריך", "💬 שיחה", "📋 תפריט")
     bot.send_message(chat_id, "📋 תפריט ראשי:", reply_markup=keyboard)
 
 def get_economy_menu():

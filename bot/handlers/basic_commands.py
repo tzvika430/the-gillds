@@ -28,6 +28,11 @@ def start(message):
     conn.close()
     msg = """🏰 **ברוך הבא ל-Gild Economy!** 🏰
 
+⚙️ **אם הבוט לא מגיב:**
+נקה היסטוריה: Settings → Clear History
+ואז שלח /start שוב
+
+
 🎮 משחק אסטרטגיה כלכלי בטלגרם
 
 ⛏️ **כריית משאבים** — farmer ו-lumberjack עובדים אוטומטית
