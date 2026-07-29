@@ -56,3 +56,26 @@ def show_community_menu(chat_id):
     keyboard.add("💬 שיחה")
     keyboard.add("↩️ תפריט ראשי")
     bot.send_message(chat_id, "👥 **קהילה**\n\n📢 /shout — שלח לכולם\n📋 /board — לוח מודעות\n💬 שיחה — הודעה פרטית", reply_markup=keyboard)
+
+# ============ ענף בניה — צבאי ============
+def show_build_military_menu(chat_id):
+    keyboard = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
+    keyboard.add("🏰 בסיס צבאי", "🕵️ בית מרגלים")
+    keyboard.add("↩️ תפריט ראשי")
+    bot.send_message(chat_id, "🏗️ **בניה צבאית**", reply_markup=keyboard)
+
+# ============ ענף בניה — כלכלי ============
+def show_build_economy_menu(chat_id):
+    keyboard = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
+    keyboard.add("🏠 צריף קש", "🧱 בית לבנים")
+    keyboard.add("🪚 מנסרה")
+    keyboard.add("↩️ תפריט ראשי")
+    bot.send_message(chat_id, "🏗️ **בניה כלכלית**", reply_markup=keyboard)
+
+# ============ ענף גיוס — כולל מרגל ============
+def show_recruit_menu(chat_id):
+    keyboard = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
+    keyboard.add("🪖 חייל", "🎖️ מפקד")
+    keyboard.add("👑 גנרל", "🕵️ מרגל")
+    keyboard.add("↩️ תפריט ראשי")
+    bot.send_message(chat_id, "🎯 **גיוס**\n\n🪖 חייל (2 Gild)\n🎖️ מפקד (10 Gild, 6 חיילים)\n👑 גנרל (30 Gild, 3 מפקדים)\n🕵️ מרגל (8 Gild, בית מרגלים)", reply_markup=keyboard)

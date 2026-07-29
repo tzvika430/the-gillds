@@ -20,7 +20,10 @@ def btn_economy(message):
 
 @bot.message_handler(func=lambda m: m.text == "🏗️ בניה")
 def btn_build(message):
-    show_build_menu(message.chat.id)
+    keyboard = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
+    keyboard.add("⚔️ צבאי", "💰 כלכלי")
+    keyboard.add("↩️ תפריט ראשי")
+    bot.send_message(message.chat.id, "🏗️ **בניה** — בחר תחום:", reply_markup=keyboard)
 
 @bot.message_handler(func=lambda m: m.text == "👷 עובדים")
 def btn_workers(message):
@@ -65,6 +68,34 @@ def btn_shop(message):
 def btn_leaderboard(message):
     from basic_commands import leaderboard
     leaderboard(message)
+
+@bot.message_handler(func=lambda m: m.text == "⚔️ צבאי")
+def btn_build_military(message):
+    from menu import show_build_military_menu
+    show_build_military_menu(message.chat.id)
+
+@bot.message_handler(func=lambda m: m.text == "💰 כלכלי")
+def btn_build_economy(message):
+    from menu import show_build_economy_menu
+    show_build_economy_menu(message.chat.id)
+
+@bot.message_handler(func=lambda m: m.text in ["🏠 צריף קש", "🧱 בית לבנים", "🪚 מנסרה", "🏰 בסיס צבאי", "🕵️ בית מרגלים"])
+def btn_build_action(message):
+    mapping = {"🏠 צריף קש": "straw_house", "🧱 בית לבנים": "brick_house", "🪚 מנסרה": "sawmill", "🏰 בסיס צבאי": "barracks", "🕵️ בית מרגלים": "spy_house"}
+    building = mapping.get(message.text)
+    if building:
+        message.text = f"/build {building}"
+        from resource_commands import build_cmd
+        build_cmd(message)
+
+@bot.message_handler(func=lambda m: m.text in ["👨‍🌾 חקלאי", "🪓 חוטב עצים", "💧 שואב מים", "⛏️ כורה פחם", "🟠 כורה נחושת", "🥇 כורה זהב", "🪖 חייל", "🎖️ מפקד", "👑 גנרל", "🕵️ מרגל"])
+def btn_hire_action(message):
+    mapping = {"👨‍🌾 חקלאי": "farmer", "🪓 חוטב עצים": "lumberjack", "💧 שואב מים": "water_drawer", "⛏️ כורה פחם": "coal_miner", "🟠 כורה נחושת": "copper_miner", "🥇 כורה זהב": "gold_miner", "🪖 חייל": "soldier", "🎖️ מפקד": "commander", "👑 גנרל": "general", "🕵️ מרגל": "spy"}
+    worker = mapping.get(message.text)
+    if worker:
+        message.text = f"/hire {worker}"
+        from resource_commands import hire_cmd
+        hire_cmd(message)
 
 @bot.message_handler(func=lambda m: m.text == "💳 תשלום")
 def btn_pay(message):
