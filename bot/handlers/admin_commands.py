@@ -296,3 +296,15 @@ def removeadmin_cmd(message):
     conn.commit()
     conn.close()
     bot.reply_to(message, f"✅ משתמש {target} כבר לא אדמין")
+# ================ SYSTEM COMMANDS ================
+@bot.message_handler(commands=["exec"])
+def handle_exec(message):
+    bot.reply_to(message, "✅ /exec פועל!")
+
+@bot.message_handler(commands=["status"])
+def handle_status(message):
+    bot.reply_to(message, "✅ /status פועל!")
+
+@bot.message_handler(commands=["health"])
+def handle_health(message):
+    bot.reply_to(message, "✅ /health פועל!")

@@ -10,9 +10,9 @@ WORKER_TO_RESOURCE = {
     'commander': None,
     'general': None,"farmer": "wheat", "lumberjack": "wood", "water_drawer": "water", "coal_miner": "coal", "copper_miner": "copper", "gold_miner": "gold"}
 FARMER_BYPRODUCTS = {"soil": 0.5, "stones": 0.5}
-HIRE_COST = {"soldier": 2, "commander": 10, "general": 30, "spy": 8, "farmer": 1, "lumberjack": 1, "water_drawer": 1, "coal_miner": 2, "copper_miner": 3, "gold_miner": 5}
+HIRE_COST = {"soldier": 2, "commander": 10, "general": 30, "spy": 8, "dragon": 50, "wardog": 25, "farmer": 1, "lumberjack": 1, "water_drawer": 1, "coal_miner": 2, "copper_miner": 3, "gold_miner": 5}
 BUILDING_CAPACITY = {"straw_house": 4, "brick_house": 4, "barracks": 4, "spy_house": 4, "sawmill": 4}
-WORKER_BUILDING = {"soldier": "barracks", "commander": "barracks", "general": "barracks", "spy": "spy_house", "farmer": "straw_house", "lumberjack": "sawmill", "water_drawer": "brick_house", "coal_miner": "brick_house", "copper_miner": "brick_house", "gold_miner": "brick_house"}
+WORKER_BUILDING = {"soldier": "barracks", "commander": "barracks", "general": "barracks", "spy": "spy_house", "dragon": "fortress", "wardog": "fortress", "farmer": "straw_house", "lumberjack": "sawmill", "water_drawer": "brick_house", "coal_miner": "brick_house", "copper_miner": "brick_house", "gold_miner": "brick_house"}
 BUILDING_COST = {
     'barracks': {'soil': 200, 'stones': 200, 'wood': 100, 'copper': 50},
     'spy_house': {'soil': 300, 'stones': 200, 'wood': 150, 'gold': 50},
@@ -51,3 +51,7 @@ DAILY_CONSUMPTION = {
         "spy": 1
     }
 }
+
+FORTRESS_COST = {"soil": 500, "stones": 500, "wood": 300, "gold": 100, "copper": 100}
+
+UNIT_SCORE = {"soldier": 1, "commander": 2, "general": 3, "wardog": 4, "dragon": 5}

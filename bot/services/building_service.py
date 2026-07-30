@@ -50,6 +50,9 @@ def hire_worker(user_id, worker_type):
                   (user_id, building_type))
         b = c.fetchone()
         building_count = b[0] if b else 0
+        if building_count < 1:
+            conn.close()
+            return False, f"צריך {building_type} כדי לגייס {worker_type}"
         capacity = building_count * BUILDING_CAPACITY.get(building_type, DEFAULT_BUILDING_CAPACITY)
         same_building_workers = [w for w, bt in WORKER_BUILDING.items() if bt == building_type]
         placeholders = ','.join('?' * len(same_building_workers))

@@ -1,6 +1,6 @@
 from telebot import types
 from bot_instance import bot
-from config import DB_PATH, ALL_RESOURCE_IDX
+from config import DB_PATH, ALL_RESOURCE_IDX, UNIT_SCORE
 import sqlite3
 import random
 
@@ -11,8 +11,9 @@ def attack_cmd(message):
     # בדוק שלשחקן יש חיילים
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
-    c.execute("SELECT SUM(count) FROM workers WHERE user_id=? AND worker_type IN ('soldier','commander','general')", (attacker_id,))
-    my_soldiers = c.fetchone()[0] or 0
+    c.execute("SELECT worker_type, count FROM workers WHERE user_id=? AND worker_type IN ('soldier','commander','general','wardog','dragon')", (attacker_id,))
+    my_units = c.fetchall()
+    my_soldiers = sum(UNIT_SCORE.get(wt, 0) * cnt for wt, cnt in my_units)
     
     if my_soldiers == 0:
         bot.reply_to(message, "❌ אין לך חיילים! צריך לפחות soldier אחד כדי לתקוף.\n/build barracks ← /hire soldier")
@@ -31,8 +32,9 @@ def attack_cmd(message):
     defender_id = random.choice(targets)
     
     # בדוק חיילים של המגן
-    c.execute("SELECT SUM(count) FROM workers WHERE user_id=? AND worker_type IN ('soldier','commander','general')", (defender_id,))
-    defender_soldiers = c.fetchone()[0] or 0
+    c.execute("SELECT worker_type, count FROM workers WHERE user_id=? AND worker_type IN ('soldier','commander','general','wardog','dragon')", (defender_id,))
+    def_units = c.fetchall()
+    defender_soldiers = sum(UNIT_SCORE.get(wt, 0) * cnt for wt, cnt in def_units)
     
     # הכרעה
     if defender_soldiers == 0:

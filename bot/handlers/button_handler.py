@@ -1,4 +1,6 @@
+import sqlite3
 from telebot import types
+from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 from bot_instance import bot
 from menu import show_main_menu, show_army_menu, show_recruit_menu, show_economy_menu, show_build_menu, show_workers_menu, show_community_menu
 
@@ -81,21 +83,92 @@ def btn_build_economy(message):
 
 @bot.message_handler(func=lambda m: m.text in ["🏠 צריף קש", "🧱 בית לבנים", "🪚 מנסרה", "🏰 בסיס צבאי", "🕵️ בית מרגלים"])
 def btn_build_action(message):
-    mapping = {"🏠 צריף קש": "straw_house", "🧱 בית לבנים": "brick_house", "🪚 מנסרה": "sawmill", "🏰 בסיס צבאי": "barracks", "🕵️ בית מרגלים": "spy_house"}
+    import sqlite3
+    mapping = {"🏠 צריף קש": "straw_house", "🧱 בית לבנים": "brick_house", "🪚 מנסרה": "sawmill", "🏰 בסיס צבאי": "barracks", "🕵️ בית מרגלים": "spy_house",
+        "🏯 מצודה": "fortress",
+        "🏯 מצודה": "fortress"}
     building = mapping.get(message.text)
     if building:
         message.text = f"/build {building}"
         from resource_commands import build_cmd
         build_cmd(message)
 
-@bot.message_handler(func=lambda m: m.text in ["👨‍🌾 חקלאי", "🪓 חוטב עצים", "💧 שואב מים", "⛏️ כורה פחם", "🟠 כורה נחושת", "🥇 כורה זהב", "🪖 חייל", "🎖️ מפקד", "👑 גנרל", "🕵️ מרגל"])
+@bot.message_handler(func=lambda m: m.text in ["👨‍🌾 חקלאי", "🪓 חוטב עצים", "💧 שואב מים", "⛏️ כורה פחם", "🟠 כורה נחושת", "🥇 כורה זהב", "🪖 חייל", "🎖️ מפקד", "👑 גנרל", "🕵️ מרגל", "🐉 דרקון", "🐕 כלב מחץ", "דרקון", "כלב מחץ"])
 def btn_hire_action(message):
-    mapping = {"👨‍🌾 חקלאי": "farmer", "🪓 חוטב עצים": "lumberjack", "💧 שואב מים": "water_drawer", "⛏️ כורה פחם": "coal_miner", "🟠 כורה נחושת": "copper_miner", "🥇 כורה זהב": "gold_miner", "🪖 חייל": "soldier", "🎖️ מפקד": "commander", "👑 גנרל": "general", "🕵️ מרגל": "spy"}
+    import sqlite3
+    mapping = {"👨‍🌾 חקלאי": "farmer", "🪓 חוטב עצים": "lumberjack", "💧 שואב מים": "water_drawer", "⛏️ כורה פחם": "coal_miner", "🟠 כורה נחושת": "copper_miner", "🥇 כורה זהב": "gold_miner", "🪖 חייל": "soldier", "🎖️ מפקד": "commander", "👑 גנרל": "general", "🕵️ מרגל": "spy",
+        "🐉 דרקון": "dragon",
+        "🐕 כלב מחץ": "wardog"}
     worker = mapping.get(message.text)
     if worker:
         message.text = f"/hire {worker}"
         from resource_commands import hire_cmd
         hire_cmd(message)
+
+@bot.message_handler(func=lambda m: m.text == "🏯 מצודה")
+def btn_fortress(message):
+    user_id = message.from_user.id
+    import sqlite3
+    from config import DB_PATH
+    
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    c.execute("SELECT count FROM buildings WHERE user_id=? AND building_type='fortress'", (user_id,))
+    row = c.fetchone()
+    has_fortress = row and row[0] > 0
+    conn.close()
+    
+    if has_fortress:
+        bot.send_message(message.chat.id, "🏯 יש לך מצודה!\n\n🎯 גיוס ← 🐉🐕")
+        return
+    
+    from fortress_handler import fortress_projects
+    open_projects = []
+    for pid, proj in fortress_projects.items():
+        if proj["partner"] is None and pid != user_id:
+            conn = sqlite3.connect(DB_PATH)
+            c = conn.cursor()
+            c.execute("SELECT display_name FROM users WHERE user_id=?", (pid,))
+            row = c.fetchone()
+            name = row[0] if row and row[0] else str(pid)
+            conn.close()
+            open_projects.append((pid, name))
+    
+    keyboard = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
+    keyboard.add(types.KeyboardButton("🏯 מצודה חדשה"))
+    for pid, name in open_projects:
+        # הראה סטטוס תרומה
+        proj = fortress_projects[pid]
+        donated = sum(proj["resources"].values())
+        total = sum(FORTRESS_COST.values())
+        pct = int(donated / total * 100)
+        keyboard.add(types.KeyboardButton(f"🤝 {name} ({pct}%)"))
+    keyboard.add("↩️ תפריט ראשי")
+    
+    from config import FORTRESS_COST
+    msg = "🏯 **מצודה** — מבנה משותף\n\n"
+    msg += "📜 **חוקים:**\n• דרושים 2 שחקנים\n• כל אחד חייב לתרום\n• גם אם לאחד יש הכל — חייב שותף\n\n"
+    msg += "💰 **עלות:**\n"
+    for r, amt in FORTRESS_COST.items():
+        msg += f"• {r}: {amt}\n"
+    msg += "\n⚠️ **בהקמה חדשה יש צורך בשחקן נוסף שיצטרף למיזם!**"
+    if open_projects:
+        msg += "\n\n🤝 **יזמים שפתחו מצודה — להצטרפות:**"
+    
+    bot.send_message(message.chat.id, msg, reply_markup=keyboard)
+
+@bot.message_handler(func=lambda m: m.text == "🏯 מצודה חדשה")
+def btn_fortress_start(message):
+    message.text = "/fortress open"
+    from fortress_handler import fortress_cmd
+    fortress_cmd(message)
+
+@bot.message_handler(func=lambda m: m.text.startswith("🤝 הצטרף ל-"))
+def btn_fortress_join(message):
+    owner_name = message.text[10:]
+    message.text = f"/fortress join {owner_name}"
+    from fortress_handler import fortress_cmd
+    fortress_cmd(message)
 
 @bot.message_handler(func=lambda m: m.text == "💳 תשלום")
 def btn_pay(message):
