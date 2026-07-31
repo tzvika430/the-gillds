@@ -51,11 +51,11 @@ def show_workers_menu(chat_id):
 
 # ============ ענף קהילה ============
 def show_community_menu(chat_id):
-    keyboard = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
-    keyboard.add("📢 /shout", "📋 /board")
-    keyboard.add("💬 שיחה")
-    keyboard.add("↩️ תפריט ראשי")
-    bot.send_message(chat_id, "👥 **קהילה**\n\n📢 /shout — שלח לכולם\n📋 /board — לוח מודעות\n💬 שיחה — הודעה פרטית", reply_markup=keyboard)
+    inline_kb = types.InlineKeyboardMarkup()
+    inline_kb.add(types.InlineKeyboardButton("📢 שלח לכולם", callback_data="community_shout"),
+                  types.InlineKeyboardButton("📋 לוח מודעות", callback_data="community_board"))
+    inline_kb.add(types.InlineKeyboardButton("💬 שיחה פרטית", callback_data="community_chat"))
+    bot.send_message(chat_id, "👥 **קהילה**", reply_markup=inline_kb)
 
 # ============ ענף בניה — צבאי ============
 def show_build_military_menu(chat_id):

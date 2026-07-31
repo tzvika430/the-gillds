@@ -1,4 +1,5 @@
 from bot_instance import bot
+from telebot import types
 from config import DB_PATH
 import sqlite3
 
@@ -43,16 +44,30 @@ def msg_cmd(message):
     
     # שלח לנמען
     try:
-        bot.send_message(target_id, f"🏰 **Gild Economy** 💬\n\n**{sender_name}** שולח לך:\n\n{msg_text}\n\n📋 /menu — חזרה לתפריט")
+        inline_kb = types.InlineKeyboardMarkup()
+        inline_kb.add(types.InlineKeyboardButton("💬 תגובה", callback_data=f"msg_reply_{user_id}"))
+        bot.send_message(target_id, f"🏰 **Gild Economy** 💬\n\n**{sender_name}** שולח לך:\n\n{msg_text}", reply_markup=inline_kb)
         bot.reply_to(message, f"✅ ההודעה נשלחה ל-{target_display or target_name}")
-    except:
-        bot.reply_to(message, "❌ לא ניתן לשלוח הודעה (המשתמש חסם את הבוט)")
+    except Exception as e:
+        bot.reply_to(message, f"❌ שגיאה: {str(e)[:100]}")
 
 @bot.message_handler(func=lambda m: m.text and m.text.startswith("💬 "))
 def handle_chat_click(message):
     target_name = message.text[2:].strip()
     if target_name and target_name != "תפריט ראשי":
         bot.send_message(message.chat.id, f"💬 שיחה עם **{target_name}**\n\nשלח: /msg {target_name} [הודעה]")
+
+@bot.callback_query_handler(func=lambda call: call.data.startswith("msg_reply_"))
+def inline_msg_reply(call):
+    sender_id = call.data.replace("msg_reply_", "")
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    c.execute("SELECT display_name FROM users WHERE user_id=?", (sender_id,))
+    row = c.fetchone()
+    name = row[0] if row and row[0] else str(sender_id)
+    conn.close()
+    bot.send_message(call.message.chat.id, f"💬 שלח תגובה ל-**{name}**:\n/msg {name} [ההודעה שלך]")
+    bot.answer_callback_query(call.id)
 
 @bot.message_handler(commands=['group'])
 def group_cmd(message):

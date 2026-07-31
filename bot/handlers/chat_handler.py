@@ -76,6 +76,10 @@ def board_cmd(message):
     bot.reply_to(message, msg)
 
 
+@bot.message_handler(func=lambda m: m.text == "💬 תגובה")
+def btn_reply_handler(message):
+    bot.send_message(message.chat.id, "💬 **תגובה**\n\nהקלד /reply ולאחר מכן את ההודעה שלך.\nלדוגמה: /reply שלום גם לך!")
+
 @bot.message_handler(commands=['reply'])
 def reply_cmd(message):
     parts = message.text.split(maxsplit=1)

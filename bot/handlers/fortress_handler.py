@@ -5,10 +5,23 @@ from telebot import types
 
 fortress_projects = {}
 
+@bot.callback_query_handler(func=lambda call: call.data == "fortress_new")
+def inline_fortress_new(call):
+    call.message.text = "/fortress open"
+    fortress_cmd(call.message)
+    bot.answer_callback_query(call.id)
+
 @bot.callback_query_handler(func=lambda call: call.data == "fortress_donate")
 def inline_fortress_donate(call):
     bot.send_message(call.message.chat.id, "📦 **תרום משאבים**\n\n/fortress give [משאב] [כמות]\n\nמשאבים: soil, stones, wood, gold, copper")
     bot.answer_callback_query(call.id, "השתמש בפקודה /fortress give")
+
+@bot.callback_query_handler(func=lambda call: call.data.startswith("fortress_join_"))
+def inline_fortress_join(call):
+    pid = call.data.replace("fortress_join_", "")
+    call.message.text = f"/fortress join {pid}"
+    fortress_cmd(call.message)
+    bot.answer_callback_query(call.id, "מצטרף...")
 
 @bot.callback_query_handler(func=lambda call: call.data == "fortress_status")
 def inline_fortress_status(call):

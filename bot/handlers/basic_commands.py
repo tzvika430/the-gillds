@@ -26,24 +26,20 @@ def start(message):
     c.execute("INSERT OR IGNORE INTO buildings (user_id, building_type, count) VALUES (?, 'straw_house', 1)", (user_id,))
     conn.commit()
     conn.close()
-    msg = """🏰 **ברוך הבא ל-Gild Economy!** 🏰
+    msg = """🏰 **Gild Economy** 🏰
 
-⚙️ **אם הבוט לא מגיב:**
-נקה היסטוריה: Settings → Clear History
-ואז שלח /start שוב
+🎯 **איך משחקים?**
 
+1️⃣ 👤 **פרופיל** — לראות מה יש לך
+2️⃣ 🏗️ **בניה** — לבנות מבנים
+3️⃣ 👷 **עובדים** — לשכור עובדים
+4️⃣ 💰 **כלכלה** — לסחור
+5️⃣ ⚔️ **צבא** — לגייס חיילים
 
-🎮 משחק אסטרטגיה כלכלי בטלגרם
-
-⛏️ **כריית משאבים** — farmer ו-lumberjack עובדים אוטומטית
-🏗️ **בניית מבנים** — straw_house, brick_house, sawmill
-👷 **שכירת עובדים** — water_drawer, coal_miner, copper_miner, gold_miner
-🏪 **שוק מסחר** — קנה ומכור משאבים לשחקנים אחרים
-⚔️ **מלחמה** — `/attack`
-
-📚 לחץ /doc למדריך המלא
-📋 **תפריט** — `/menu`
-👤 לחץ /profile לפרופיל שלך"""
+💡 **טיפ:** 7 ימי ניסיון חינם
+📚 /doc — מדריך מלא
+👥 /shout — שלח לכולם
+"""
     keyboard = get_main_keyboard()
     bot.reply_to(message, msg, reply_markup=keyboard)
 

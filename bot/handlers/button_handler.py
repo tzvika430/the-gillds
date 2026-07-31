@@ -22,14 +22,20 @@ def btn_economy(message):
 
 @bot.message_handler(func=lambda m: m.text == "🏗️ בניה")
 def btn_build(message):
+    import sqlite3
     keyboard = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
     keyboard.add("⚔️ צבאי", "💰 כלכלי")
     keyboard.add("↩️ תפריט ראשי")
-    bot.send_message(message.chat.id, "🏗️ **בניה** — בחר תחום:", reply_markup=keyboard)
+    bot.send_message(message.chat.id, "🏗️ **בניה** — בחר תחום:", reply_markup=inline_kb)
 
 @bot.message_handler(func=lambda m: m.text == "👷 עובדים")
 def btn_workers(message):
     show_workers_menu(message.chat.id)
+
+@bot.message_handler(func=lambda m: m.text == "💬 שיחה")
+def btn_chat(message):
+    from msg_handler import chat_cmd
+    chat_cmd(message)
 
 @bot.message_handler(func=lambda m: m.text == "👥 קהילה")
 def btn_community(message):
@@ -47,7 +53,7 @@ def btn_war(message):
     keyboard = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
     keyboard.add("⚔️ כן, צא לקרב!", "🕊️ לא, שלום")
     keyboard.add("↩️ תפריט ראשי")
-    bot.send_message(message.chat.id, "⚔️ **צא לקרב?**\n\nמנצח לוקח 10% משאבים + 1 Gild", reply_markup=keyboard)
+    bot.send_message(message.chat.id, "⚔️ **צא לקרב?**\n\nמנצח לוקח 10% משאבים + 1 Gild", reply_markup=inline_kb)
 
 @bot.message_handler(func=lambda m: m.text == "⚔️ כן, צא לקרב!")
 def btn_attack_yes(message):
@@ -64,7 +70,7 @@ def btn_shop(message):
     keyboard = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
     keyboard.add("🛒 קנה", "💰 מכור")
     keyboard.add("↩️ תפריט ראשי")
-    bot.send_message(message.chat.id, "🛒 **חנות**\n\nקנייה: 500 יח׳ = 1 Gild\nמכירה: 250 יח׳ = 1 Gild", reply_markup=keyboard)
+    bot.send_message(message.chat.id, "🛒 **חנות**\n\nקנייה: 500 יח׳ = 1 Gild\nמכירה: 250 יח׳ = 1 Gild", reply_markup=inline_kb)
 
 @bot.message_handler(func=lambda m: m.text == "🏆 מובילים")
 def btn_leaderboard(message):
@@ -134,16 +140,14 @@ def btn_fortress(message):
             conn.close()
             open_projects.append((pid, name))
     
-    keyboard = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
-    keyboard.add(types.KeyboardButton("🏯 מצודה חדשה"))
+    inline_kb = types.InlineKeyboardMarkup()
+    inline_kb.add(types.InlineKeyboardButton("🏯 מצודה חדשה", callback_data="fortress_new"))
     for pid, name in open_projects:
-        # הראה סטטוס תרומה
         proj = fortress_projects[pid]
         donated = sum(proj["resources"].values())
         total = sum(FORTRESS_COST.values())
-        pct = int(donated / total * 100)
-        keyboard.add(types.KeyboardButton(f"🤝 {name} ({pct}%)"))
-    keyboard.add("↩️ תפריט ראשי")
+        pct = int(donated / total * 100) if total > 0 else 0
+        inline_kb.add(types.InlineKeyboardButton(f"🤝 {name} ({pct}%)", callback_data=f"fortress_join_{pid}"))
     
     from config import FORTRESS_COST
     msg = "🏯 **מצודה** — מבנה משותף\n\n"
@@ -155,7 +159,7 @@ def btn_fortress(message):
     if open_projects:
         msg += "\n\n🤝 **יזמים שפתחו מצודה — להצטרפות:**"
     
-    bot.send_message(message.chat.id, msg, reply_markup=keyboard)
+    bot.send_message(message.chat.id, msg, reply_markup=inline_kb)
 
 @bot.message_handler(func=lambda m: m.text == "🏯 מצודה חדשה")
 def btn_fortress_start(message):
@@ -163,6 +167,7 @@ def btn_fortress_start(message):
     from fortress_handler import fortress_cmd
     fortress_cmd(message)
 
+@bot.message_handler(func=lambda m: m.text.startswith("🤝 הצטרף ל-"))
 @bot.message_handler(func=lambda m: m.text.startswith("🤝 הצטרף ל-"))
 def btn_fortress_join(message):
     owner_name = message.text[10:]
@@ -174,6 +179,24 @@ def btn_fortress_join(message):
 def btn_pay(message):
     from admin_commands import pay_cmd
     pay_cmd(message)
+
+@bot.callback_query_handler(func=lambda call: call.data == "community_shout")
+def inline_community_shout(call):
+    bot.send_message(call.message.chat.id, "📢 שלח את ההודעה שלך לכולם:\n/shout [ההודעה]")
+    bot.answer_callback_query(call.id)
+
+@bot.callback_query_handler(func=lambda call: call.data == "community_board")
+def inline_community_board(call):
+    call.message.text = "/board"
+    from chat_handler import board_cmd
+    board_cmd(call.message)
+    bot.answer_callback_query(call.id)
+
+@bot.callback_query_handler(func=lambda call: call.data == "community_chat")
+def inline_community_chat(call):
+    from msg_handler import chat_cmd
+    chat_cmd(call.message)
+    bot.answer_callback_query(call.id)
 
 @bot.message_handler(func=lambda m: m.text == "👤 פרופיל")
 def btn_profile(message):
