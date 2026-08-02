@@ -26,7 +26,7 @@ def btn_build(message):
     keyboard = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
     keyboard.add("⚔️ צבאי", "💰 כלכלי")
     keyboard.add("↩️ תפריט ראשי")
-    bot.send_message(message.chat.id, "🏗️ **בניה** — בחר תחום:", reply_markup=inline_kb)
+    bot.send_message(message.chat.id, "🏗️ **בניה** — בחר תחום:", reply_markup=keyboard)
 
 @bot.message_handler(func=lambda m: m.text == "👷 עובדים")
 def btn_workers(message):
@@ -53,7 +53,7 @@ def btn_war(message):
     keyboard = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
     keyboard.add("⚔️ כן, צא לקרב!", "🕊️ לא, שלום")
     keyboard.add("↩️ תפריט ראשי")
-    bot.send_message(message.chat.id, "⚔️ **צא לקרב?**\n\nמנצח לוקח 10% משאבים + 1 Gild", reply_markup=inline_kb)
+    bot.send_message(message.chat.id, "⚔️ **צא לקרב?**\n\nמנצח לוקח 10% משאבים + 1 Gild", reply_markup=keyboard)
 
 @bot.message_handler(func=lambda m: m.text == "⚔️ כן, צא לקרב!")
 def btn_attack_yes(message):
@@ -70,7 +70,7 @@ def btn_shop(message):
     keyboard = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
     keyboard.add("🛒 קנה", "💰 מכור")
     keyboard.add("↩️ תפריט ראשי")
-    bot.send_message(message.chat.id, "🛒 **חנות**\n\nקנייה: 500 יח׳ = 1 Gild\nמכירה: 250 יח׳ = 1 Gild", reply_markup=inline_kb)
+    bot.send_message(message.chat.id, "🛒 **חנות**\n\nקנייה: 500 יח׳ = 1 Gild\nמכירה: 250 יח׳ = 1 Gild", reply_markup=keyboard)
 
 @bot.message_handler(func=lambda m: m.text == "🏆 מובילים")
 def btn_leaderboard(message):
@@ -113,6 +113,7 @@ def btn_hire_action(message):
 
 @bot.message_handler(func=lambda m: m.text == "🏯 מצודה")
 def btn_fortress(message):
+    import sqlite3
     user_id = message.from_user.id
     import sqlite3
     from config import DB_PATH
@@ -128,26 +129,39 @@ def btn_fortress(message):
         bot.send_message(message.chat.id, "🏯 יש לך מצודה!\n\n🎯 גיוס ← 🐉🐕")
         return
     
-    from fortress_handler import fortress_projects
+    from fortress_handler import get_fortress_projects
+    from config import FORTRESS_COST
     open_projects = []
-    for pid, proj in fortress_projects.items():
-        if proj["partner"] is None and pid != user_id:
+    for row in get_fortress_projects():
+        if row[1] is not None: continue
+        pid = row[0]
+        proj = {"resources": {"soil": row[2], "stones": row[3], "wood": row[4], "gold": row[5], "copper": row[6]}}
+        if row[1] is None and pid != user_id:
             conn = sqlite3.connect(DB_PATH)
             c = conn.cursor()
-            c.execute("SELECT display_name FROM users WHERE user_id=?", (pid,))
+            c.execute("SELECT display_name, username FROM users WHERE user_id=?", (pid,))
             row = c.fetchone()
-            name = row[0] if row and row[0] else str(pid)
+            name = row[0] if row and row[0] else (row[1] if row and row[1] else str(pid))
             conn.close()
+            print(f"DEBUG fortress: pid={pid}, name={name}")
+            # get name from DB
+            conn2 = sqlite3.connect(DB_PATH)
+            c2 = conn2.cursor()
+            c2.execute("SELECT display_name, username FROM users WHERE user_id=?", (pid,))
+            r2 = c2.fetchone()
+            name = r2[0] if r2 and r2[0] else (r2[1] if r2 and r2[1] else str(pid))
+            conn2.close()
             open_projects.append((pid, name))
     
     inline_kb = types.InlineKeyboardMarkup()
     inline_kb.add(types.InlineKeyboardButton("🏯 מצודה חדשה", callback_data="fortress_new"))
     for pid, name in open_projects:
-        proj = fortress_projects[pid]
+        proj = {"resources": {"soil": 0, "stones": 0, "wood": 0, "gold": 0, "copper": 0}}
         donated = sum(proj["resources"].values())
         total = sum(FORTRESS_COST.values())
         pct = int(donated / total * 100) if total > 0 else 0
-        inline_kb.add(types.InlineKeyboardButton(f"🤝 {name} ({pct}%)", callback_data=f"fortress_join_{pid}"))
+        display = name if name and name.isdigit() == False else f"שחקן #{pid}"
+        inline_kb.add(types.InlineKeyboardButton(f"🤝 {display} ({pct}%)", callback_data=f"fortress_join_{pid}"))
     
     from config import FORTRESS_COST
     msg = "🏯 **מצודה** — מבנה משותף\n\n"
